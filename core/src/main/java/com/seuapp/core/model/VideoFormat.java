@@ -38,7 +38,8 @@ public class VideoFormat {
         return label;
     }
 
-    @Override public String toString() {
+    @Override
+     public String toString() {
         return label;
     }
 
