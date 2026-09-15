@@ -1,16 +1,45 @@
 package com.seuapp.core.model;
 
-/**
- * Representa um formato/qualidade disponível para download,
- * extraído da saída JSON do yt-dlp (yt-dlp -J <url>).
- */
+
 public class VideoFormat {
 
-    // TODO: campos (ex: formatId, ext, resolution, fileSizeMb, label)
+    private final String formatId;
+    private final String ext;
+    private final String resolution;
+    private final Double fileSizeMb;
+    private final String label;
 
-    // TODO: construtor
+    public VideoFormat(String formatId, String ext, String resolution, Double fileSizeMb, String label){
 
-    // TODO: getters
+        this.formatId = formatId;
+        this.ext = ext;
+        this.resolution = resolution;
+        this.fileSizeMb = fileSizeMb;
+        this.label = label;
+    }
 
-    // TODO: sobrescrever toString() -> importante pra exibição em ComboBox/listas na UI
+    public String getFormatId() {
+        return formatId;
+    }
+
+    public String getExt() {
+        return ext;
+    }
+
+    public String getResolution() {
+        return resolution;
+    }
+
+    public Double getFileSizeMb() {
+        return fileSizeMb;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @Override public String toString() {
+        return label;
+    }
+
 }
