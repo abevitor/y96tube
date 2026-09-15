@@ -1,0 +1,2 @@
+rootProject.name = 'youtube-converter'
+include 'core', 'app-desktop'
