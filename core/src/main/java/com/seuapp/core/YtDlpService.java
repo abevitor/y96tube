@@ -42,6 +42,50 @@ public class YtDlpService {
         String ffmpeg = Files.isRegularFile(ffmpegPath) ? ffmpegPath.toString() : ffmpegName;
 
         return new YtDlpService(ytDlp, ffmpeg);
+    }
 
+    public List<VideoFormat> listFormats(String url) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(ytDlpBinary, "-J", "--no-warnings", url);
+        pb.redirectErrorStream(false);
+        Process process = pb.start();
+
+        String json = readAll(process.getInputStream());
+        String errOutput = readAll(process.getErrorStream());
+
+        int exit = process.waitFor();
+        if(exit != 0) {
+            throw new IOException("yt-dlp falhou ao consultar formatos (exit " + exit + "): " + errOutput);
+
+        }
+
+        return parseFormats(json);
+    }
+
+    private List<VideoFormat> parseFormats(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(json);
+        JsonNode formats = root.get("formats");
+
+        List<VideoFormat> result = new ArrayList<>();
+        if(formats == null || !formats.isArray()) {
+            return result;
+        }
+
+        for(JsonNode f : formats) {
+            String id = textOrNull(f, "format_id");
+            String ext = textOrNull(f, "ext");
+            String resolution = f.has("resolution") ? f.get("resolution").asText()
+                    : (f.has("height") && !f.get("height").isNull() ? f.get("height").asText() + "p" : "audio only");
+            Double sizeMb = null;
+            if(f.has("filesize") && !f.get("filesize").isNull()) {
+                sizeMb = f.get("filesize").asDouble() / (1024.0 * 1024.0);
+            } else if (f.has("filesize_approx") && !f.get("filesize_approx").isNull()){
+                 sizeMb = f.get("filesize_approx").asDouble() / (1024.0 * 1024.0);
+            }
+            
+            String label = buildLabel(id, ext, resolution, sizeMb);
+            result.add(new VideoFormat(id, ext, resolution, sizeMb, label));
+
+        }
     }
 }    
