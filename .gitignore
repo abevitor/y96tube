@@ -1,0 +1,20 @@
+# Build outputs do Gradle (cada módulo gera isso)
+build/
+bin/
+out/
+
+# Cache/config interna do Gradle
+.gradle/
+
+# Configs de IDE
+.vscode/
+.idea/
+*.iml
+
+# Binários externos (yt-dlp, ffmpeg) — não versionar, são grandes e específicos de SO
+tools/*.exe
+tools/yt-dlp
+tools/ffmpeg
+
+# Pasta de teste com os downloads que você já fez
+downloads-teste/
