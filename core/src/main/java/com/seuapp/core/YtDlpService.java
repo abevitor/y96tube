@@ -85,7 +85,55 @@ public class YtDlpService {
             
             String label = buildLabel(id, ext, resolution, sizeMb);
             result.add(new VideoFormat(id, ext, resolution, sizeMb, label));
-
         }
+        return result;
     }
+
+    private String buildLabel(String id, String ext, String resolution, Double sizeMb) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(resolution).append("-").append(ext).append("(").append(id).append(")");
+        if(sizeMb != null) {
+            sb.append(String.format("~%.1f MB", sizeMb));
+        }
+        return sb.toString();
+    }
+
+    private String textOrNull(JsonNode node, String field) {
+        return node.has(field) && !node.get(field).isNull() ? node.get(field).asText() : null;
+
+    }
+
+    public int download(String url,
+                        String formatId,
+                        OutputType outputType,
+                        Path outputDir,
+                        Consumer<Double> progressListener) throws IOException, InterruptedException {
+                            Files.createDirectories(outputDir);
+
+                            List<String> command = new ArrayList<>();
+                            command.add(ytDlpBinary);
+                            command.add("--ffmpeg-location");
+                            command.add(ffmpegBinary);
+                            command.add("-o");
+                            command.add(outputDir.resolve("%(title)s.%(ext)s").toString());
+
+                            if(outputType == OutputType.MP3){
+                                command.add("-f");
+                                command.add("bestaudio");
+                                command.add("--extract-audio");
+                                command.add("--audio-format");
+                                command.add("mp3");
+                                command.add("--audio-quality");
+                                command.add("0");
+                            }else {
+                                command.add("-f");
+                                command.add(formatId != null ? formatId + "+bestaudio/best" : "bestvideo+bestaudio/best");
+
+                            }
+
+                            command.add(url);
+                            
+                            ProcessBuilder pb = new ProcessBuilder(command);
+                            
+                        }
 }    
