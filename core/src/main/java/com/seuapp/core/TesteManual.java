@@ -1,4 +1,5 @@
 package com.seuapp.core;
+
 import java.nio.file.Paths;
 import com.seuapp.core.model.OutputType;
 
@@ -11,16 +12,13 @@ public class TesteManual {
         formatos.forEach(System.out::println);
 
         // agora testa o download em si (MP3, mais simples pra testar)
-        int resultado = service.download(
+        int resultado2 = service.download(
                 "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                null, // formatId só importa pro MP4
-                OutputType.MP3,
+                "137",
+                OutputType.MP4,
                 Paths.get("downloads-teste"),
-                percent -> System.out.println("Progresso: " + percent + "%")
-        );
+                percent -> System.out.println("Progresso: " + percent + "%"));
+        System.out.println("Terminou com código: " + resultado2);
 
-        System.out.println("Terminou com código: " + resultado);
     }
 }
-    
-
