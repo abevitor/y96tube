@@ -128,6 +128,8 @@ public class YtDlpService {
                             }else {
                                 command.add("-f");
                                 command.add(formatId != null ? formatId + "+bestaudio/best" : "bestvideo+bestaudio/best");
+                                command.add("--merge-output-format");
+                                command.add("mp4");
 
                             }
 
