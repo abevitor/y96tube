@@ -134,6 +134,34 @@ public class YtDlpService {
                             command.add(url);
                             
                             ProcessBuilder pb = new ProcessBuilder(command);
-                            
-                        }
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (progressListener != null) {
+                    Matcher matcher = PROGRESS_PATTERN.matcher(line);
+                    if (matcher.find()) {
+                        double percent = Double.parseDouble(matcher.group(1));
+                        progressListener.accept(percent);
+                    }
+                }
+            }
+        }
+
+        return process.waitFor();
+    }
+
+    private String readAll(java.io.InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while((line = reader.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+            return sb.toString();
+        }
+    }
 }    
