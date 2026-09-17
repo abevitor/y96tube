@@ -1,32 +1,27 @@
 package com.seuapp.desktop.controller;
 
 import com.seuapp.core.YtDlpService;
+import com.seuapp.core.model.OutputType;
+import com.seuapp.core.model.VideoFormat;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.stage.DirectoryChooser;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class MainController {
-
-    // TODO: campos @FXML correspondentes aos componentes do main-view.fxml
-    // (ex: TextField urlField, ComboBox<VideoFormat> formatComboBox,
-    // RadioButton mp3Radio/mp4Radio, ProgressBar progressBar, Label statusLabel, etc)
-
-    // TODO: instância de YtDlpService (ex: via YtDlpService.withDefaultLocations(...))
-
-    @FXML
-    public void initialize() {
-        // TODO: configurações iniciais da tela (ex: selecionar MP3 por padrão)
-    }
-
-    @FXML
-    private void onListFormats() {
-        // TODO: pegar o link digitado, chamar ytDlpService.listFormats(url)
-        // em uma Task/Thread separada (pra não travar a interface),
-        // e popular o ComboBox com o resultado
-    }
-
-    @FXML
-    private void onDownload() {
-        // TODO: pegar link + formato escolhido + tipo de saída (MP3/MP4),
-        // escolher pasta de destino, chamar ytDlpService.download(...)
-        // em uma Task/Thread separada, atualizando a ProgressBar via Platform.runLater
-    }
+    @FXML private TextField urlField;
+    @FXML private Button listFormatsButton;
+    @FXML private ComboBox<VideoFormat> formatComboBox;
+    @FXML private RadioButton mp3Radio;
+    @FXML private RadioButton mp4Radio;
+    @FXML private ToggleGroup outputTypeGroup;
+    @FXML private Button downloadButton;
+    @FXML private ProgressBar progressBar;
+    @FXML private Label statusLabel;
 }
