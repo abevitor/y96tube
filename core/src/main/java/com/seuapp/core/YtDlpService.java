@@ -119,7 +119,7 @@ public class YtDlpService {
 
                             if(outputType == OutputType.MP3){
                                 command.add("-f");
-                                command.add("bestaudio");
+                                command.add(formatId != null ? formatId : "bestaudio");
                                 command.add("--extract-audio");
                                 command.add("--audio-format");
                                 command.add("mp3");

@@ -15,3 +15,7 @@ application {
 dependencies {
     implementation project(':core')
 }
+
+tasks.named('run') {
+    workingDir = rootProject.projectDir
+}
