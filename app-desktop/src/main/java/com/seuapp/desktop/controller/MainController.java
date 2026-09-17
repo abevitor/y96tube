@@ -24,4 +24,52 @@ public class MainController {
     @FXML private Button downloadButton;
     @FXML private ProgressBar progressBar;
     @FXML private Label statusLabel;
+
+    private final YtDlpService ytDlpService = 
+               YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir ")));
+
+    @FXML 
+    public void initialize() {
+        mp3Radio.setSelected(true);
+        formatComboBox.setDisable(true);
+
+         outputTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) ->
+                formatComboBox.setDisable(mp3Radio.isSelected()));
+    }
+
+    @FXML 
+    private void onListFormats() {
+        String url = urlField.getText().trim();
+
+        if(url.isEmpty()) {
+            statusLabel.setText("Cole um link do YouTube primeiro.");
+            return;
+        }
+
+        statusLabel.setText("Consultando formatos disponiveis...");
+        listFormatsButton.setDisable(true);
+
+        Task<List<VideoFormat>> task = new Task<>() {
+            @Override 
+            protected  List<VideoFormat> call() throws Exception {
+                return ytDlpService.listFormats(url);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            formatComboBox.getItems().setAll(task.getValue());
+            if(!formatComboBox.getItems().isEmpty()) {
+                formatComboBox.getSelectionModel().selectFirst(); 
+            }
+            statusLabel.setText("Formatos carregados.");
+            listFormatsButton.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            statusLabel.setText("Erro: " + task.getException().getMessage());
+            listFormatsButton.setDisable(false);
+        });
+
+        new Thread(task, "list-formats").start();
+    }
 }
