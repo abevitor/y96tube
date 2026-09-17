@@ -25,8 +25,8 @@ public class MainController {
     @FXML private ProgressBar progressBar;
     @FXML private Label statusLabel;
 
-    private final YtDlpService ytDlpService = 
-               YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir ")));
+    private final YtDlpService ytDlpService =
+        YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir")));
 
     @FXML 
     public void initialize() {
