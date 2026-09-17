@@ -13,8 +13,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainController {
+
     @FXML private TextField urlField;
     @FXML private Button listFormatsButton;
     @FXML private ComboBox<VideoFormat> formatComboBox;
@@ -26,41 +28,39 @@ public class MainController {
     @FXML private Label statusLabel;
 
     private final YtDlpService ytDlpService =
-        YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir")));
+            YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir")));
 
-    @FXML 
+    // guarda a lista completa (áudio + vídeo) vinda do yt-dlp, pra poder filtrar sem buscar de novo
+    private List<VideoFormat> todosFormatos = List.of();
+
+    @FXML
     public void initialize() {
         mp3Radio.setSelected(true);
-        formatComboBox.setDisable(true);
 
-         outputTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) ->
-                formatComboBox.setDisable(mp3Radio.isSelected()));
+        outputTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> atualizarComboFiltrado());
     }
 
-    @FXML 
+    @FXML
     private void onListFormats() {
         String url = urlField.getText().trim();
-
-        if(url.isEmpty()) {
+        if (url.isEmpty()) {
             statusLabel.setText("Cole um link do YouTube primeiro.");
             return;
         }
 
-        statusLabel.setText("Consultando formatos disponiveis...");
+        statusLabel.setText("Consultando formatos disponíveis...");
         listFormatsButton.setDisable(true);
 
         Task<List<VideoFormat>> task = new Task<>() {
-            @Override 
-            protected  List<VideoFormat> call() throws Exception {
+            @Override
+            protected List<VideoFormat> call() throws Exception {
                 return ytDlpService.listFormats(url);
             }
         };
 
         task.setOnSucceeded(e -> {
-            formatComboBox.getItems().setAll(task.getValue());
-            if(!formatComboBox.getItems().isEmpty()) {
-                formatComboBox.getSelectionModel().selectFirst(); 
-            }
+            todosFormatos = task.getValue();
+            atualizarComboFiltrado();
             statusLabel.setText("Formatos carregados.");
             listFormatsButton.setDisable(false);
         });
@@ -73,11 +73,28 @@ public class MainController {
         new Thread(task, "list-formats").start();
     }
 
-    @FXML 
+    /**
+     * Filtra a lista completa de formatos: só áudio (quando MP3 está selecionado)
+     * ou só vídeo (quando MP4 está selecionado), e repopula o ComboBox.
+     */
+    private void atualizarComboFiltrado() {
+        boolean queroAudio = mp3Radio.isSelected();
+
+        List<VideoFormat> filtrados = todosFormatos.stream()
+                .filter(f -> queroAudio == "audio only".equals(f.getResolution()))
+                .collect(Collectors.toList());
+
+        formatComboBox.getItems().setAll(filtrados);
+        if (!filtrados.isEmpty()) {
+            formatComboBox.getSelectionModel().selectFirst();
+        }
+    }
+
+    @FXML
     private void onDownload() {
         String url = urlField.getText().trim();
         if (url.isEmpty()) {
-            statusLabel.setText("Cole um link do Youtube primeiro");
+            statusLabel.setText("Cole um link do YouTube primeiro.");
             return;
         }
 
@@ -88,7 +105,7 @@ public class MainController {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Escolha a pasta de destino");
         File destination = chooser.showDialog(downloadButton.getScene().getWindow());
-        if( destination == null) {
+        if (destination == null) {
             return;
         }
         Path outputDir = destination.toPath();
@@ -98,15 +115,16 @@ public class MainController {
         statusLabel.setText("Baixando...");
 
         Task<Integer> task = new Task<>() {
-            @Override 
+            @Override
             protected Integer call() throws Exception {
                 return ytDlpService.download(url, formatId, outputType, outputDir,
-                     percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100)));
+                        percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100.0)));
             }
         };
+
         task.setOnSucceeded(e -> {
-            int exitCode =  task.getValue();
-            statusLabel.setText(exitCode == 0 ? "Download concluído!" : "Erro ( código " + exitCode + ")");
+            int exitCode = task.getValue();
+            statusLabel.setText(exitCode == 0 ? "Download concluído!" : "Erro (código " + exitCode + ")");
             downloadButton.setDisable(false);
         });
 
