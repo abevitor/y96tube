@@ -72,4 +72,49 @@ public class MainController {
 
         new Thread(task, "list-formats").start();
     }
+
+    @FXML 
+    private void onDownload() {
+        String url = urlField.getText().trim();
+        if (url.isEmpty()) {
+            statusLabel.setText("Cole um link do Youtube primeiro");
+            return;
+        }
+
+        OutputType outputType = mp3Radio.isSelected() ? OutputType.MP3 : OutputType.MP4;
+        VideoFormat selectedFormat = formatComboBox.getSelectionModel().getSelectedItem();
+        String formatId = selectedFormat != null ? selectedFormat.getFormatId() : null;
+
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Escolha a pasta de destino");
+        File destination = chooser.showDialog(downloadButton.getScene().getWindow());
+        if( destination == null) {
+            return;
+        }
+        Path outputDir = destination.toPath();
+
+        downloadButton.setDisable(true);
+        progressBar.setProgress(0);
+        statusLabel.setText("Baixando...");
+
+        Task<Integer> task = new Task<>() {
+            @Override 
+            protected Integer call() throws Exception {
+                return ytDlpService.download(url, formatId, outputType, outputDir,
+                     percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100)));
+            }
+        };
+        task.setOnSucceeded(e -> {
+            int exitCode =  task.getValue();
+            statusLabel.setText(exitCode == 0 ? "Download concluído!" : "Erro ( código " + exitCode + ")");
+            downloadButton.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            statusLabel.setText("Erro no download: " + task.getException().getMessage());
+            downloadButton.setDisable(false);
+        });
+
+        new Thread(task, "download").start();
+    }
 }
