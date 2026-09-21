@@ -30,19 +30,44 @@ public class YtDlpService {
         this.ffmpegBinary = ffmpegBinary;
     }
 
-    public static YtDlpService withDefaultLocations(Path appDir) {
-        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
-        String ytDlpName = windows ? "yt-dlp.exe" : "yt-dlp";
-        String ffmpegName = windows ? "ffmpeg.exe" : "ffmpeg";
+  public static YtDlpService withDefaultLocations(Path appDir) {
+    boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+    String ytDlpName = windows ? "yt-dlp.exe" : "yt-dlp";
+    String ffmpegName = windows ? "ffmpeg.exe" : "ffmpeg";
 
-        Path ytDlpPath = appDir.resolve("tools").resolve(ytDlpName);
-        Path ffmpegPath = appDir.resolve("tools").resolve(ffmpegName);
+    Path toolsDir = encontrarPastaTools(appDir);
 
-        String ytDlp = Files.isRegularFile(ytDlpPath) ? ytDlpPath.toString() : ytDlpName;
-        String ffmpeg = Files.isRegularFile(ffmpegPath) ? ffmpegPath.toString() : ffmpegName;
+    String ytDlp = ytDlpName;
+    String ffmpeg = ffmpegName;
 
-        return new YtDlpService(ytDlp, ffmpeg);
+    if (toolsDir != null) {
+        Path ytDlpPath = toolsDir.resolve(ytDlpName);
+        Path ffmpegPath = toolsDir.resolve(ffmpegName);
+
+        if (Files.isRegularFile(ytDlpPath)) {
+            ytDlp = ytDlpPath.toAbsolutePath().toString();
+        }
+        if (Files.isRegularFile(ffmpegPath)) {
+            ffmpeg = ffmpegPath.toAbsolutePath().toString();
+        }
     }
+
+    return new YtDlpService(ytDlp, ffmpeg);
+}
+
+private static Path encontrarPastaTools(Path partida) {
+    Path atual = partida.toAbsolutePath();
+
+    for (int i = 0; i < 6 && atual != null; i++) {
+        Path candidato = atual.resolve("tools");
+        if (Files.isDirectory(candidato)) {
+            return candidato;
+        }
+        atual = atual.getParent();
+    }
+
+    return null;
+}
 
     public List<VideoFormat> listFormats(String url) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(ytDlpBinary, "-J", "--no-warnings", url);
