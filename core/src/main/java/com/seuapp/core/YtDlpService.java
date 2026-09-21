@@ -211,4 +211,19 @@ public class YtDlpService {
             return sb.toString();
         }
     }
+
+    public boolean binariosDisponiveis() {
+        return testarBinario(ytDlpBinary) && testarBinario(ffmpegBinary);
+
+    }
+
+    private boolean testarBinario(String binario) {
+        try{
+            Process p = new ProcessBuilder(binario, "--version").redirectErrorStream(true).start();
+            int exit = p.waitFor();
+            return exit == 0;
+        } catch (IOException | InterruptedException e ) {
+            return false;
+        }
+    }
 }    
