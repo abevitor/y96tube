@@ -30,28 +30,39 @@ public class YtDlpService {
         this.ffmpegBinary = ffmpegBinary;
     }
 
-  public static YtDlpService withDefaultLocations(Path appDir) {
-    boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+public static YtDlpService withDefaultLocations(Path appDir) {
+
+    boolean windows = System.getProperty("os.name", "")
+            .toLowerCase()
+            .contains("win");
+
     String ytDlpName = windows ? "yt-dlp.exe" : "yt-dlp";
     String ffmpegName = windows ? "ffmpeg.exe" : "ffmpeg";
 
     Path toolsDir = encontrarPastaTools(appDir);
 
+    System.out.println("Diretório inicial: " + appDir.toAbsolutePath());
+    System.out.println("Pasta tools encontrada: " + toolsDir);
+
     String ytDlp = ytDlpName;
     String ffmpeg = ffmpegName;
 
     if (toolsDir != null) {
+
         Path ytDlpPath = toolsDir.resolve(ytDlpName);
         Path ffmpegPath = toolsDir.resolve(ffmpegName);
+
+        System.out.println("yt-dlp procurado em: " + ytDlpPath);
+        System.out.println("ffmpeg procurado em: " + ffmpegPath);
 
         if (Files.isRegularFile(ytDlpPath)) {
             ytDlp = ytDlpPath.toAbsolutePath().toString();
         }
+
         if (Files.isRegularFile(ffmpegPath)) {
             ffmpeg = ffmpegPath.toAbsolutePath().toString();
         }
     }
-
     return new YtDlpService(ytDlp, ffmpeg);
 }
 
@@ -238,17 +249,28 @@ private static Path encontrarPastaTools(Path partida) {
     }
 
     public boolean binariosDisponiveis() {
-        return testarBinario(ytDlpBinary) && testarBinario(ffmpegBinary);
+    return testarBinario(ytDlpBinary, "--version")
+            && testarBinario(ffmpegBinary, "-version");
+}
 
-    }
+private boolean testarBinario(String binario, String argumento) {
+    try {
+        Process p = new ProcessBuilder(binario, argumento)
+                .redirectErrorStream(true)
+                .start();
 
-    private boolean testarBinario(String binario) {
-        try{
-            Process p = new ProcessBuilder(binario, "--version").redirectErrorStream(true).start();
-            int exit = p.waitFor();
-            return exit == 0;
-        } catch (IOException | InterruptedException e ) {
-            return false;
-        }
+        int exit = p.waitFor();
+
+        return exit == 0;
+
+    } catch (IOException e) {
+        System.out.println("Erro ao executar: " + binario);
+        System.out.println("Motivo: " + e.getMessage());
+        return false;
+
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return false;
     }
+}
 }    
