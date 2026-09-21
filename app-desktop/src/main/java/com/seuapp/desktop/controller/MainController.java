@@ -81,13 +81,19 @@ public class MainController {
         boolean queroAudio = mp3Radio.isSelected();
 
         List<VideoFormat> filtrados = todosFormatos.stream()
-                .filter(f -> queroAudio == "audio only".equals(f.getResolution()))
+                .filter(f -> {
+                    String res = f.getResolution();
+                    boolean ehAudio = res != null && res.toLowerCase().contains("audio");
+                    return queroAudio == ehAudio;
+                })
                 .collect(Collectors.toList());
 
         formatComboBox.getItems().setAll(filtrados);
         if (!filtrados.isEmpty()) {
             formatComboBox.getSelectionModel().selectFirst();
         }
+
+        statusLabel.setText("Formatos disponíveis: " + filtrados.size());
     }
 
     @FXML
