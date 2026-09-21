@@ -78,23 +78,19 @@ public class MainController {
      * ou só vídeo (quando MP4 está selecionado), e repopula o ComboBox.
      */
     private void atualizarComboFiltrado() {
-        boolean queroAudio = mp3Radio.isSelected();
+    boolean queroAudio = mp3Radio.isSelected();
 
-        List<VideoFormat> filtrados = todosFormatos.stream()
-                .filter(f -> {
-                    String res = f.getResolution();
-                    boolean ehAudio = res != null && res.toLowerCase().contains("audio");
-                    return queroAudio == ehAudio;
-                })
-                .collect(Collectors.toList());
+    List<VideoFormat> filtrados = todosFormatos.stream()
+            .filter(f -> f.isAudioOnly() == queroAudio)
+            .collect(Collectors.toList());
 
-        formatComboBox.getItems().setAll(filtrados);
-        if (!filtrados.isEmpty()) {
-            formatComboBox.getSelectionModel().selectFirst();
-        }
-
-        statusLabel.setText("Formatos disponíveis: " + filtrados.size());
+    formatComboBox.getItems().setAll(filtrados);
+    if (!filtrados.isEmpty()) {
+        formatComboBox.getSelectionModel().selectFirst();
     }
+
+    statusLabel.setText("Formatos disponíveis: " + filtrados.size());
+}
 
     @FXML
     private void onDownload() {

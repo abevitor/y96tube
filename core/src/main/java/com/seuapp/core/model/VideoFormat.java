@@ -1,26 +1,24 @@
 package com.seuapp.core.model;
 
-
 public class VideoFormat {
 
     private final String formatId;
     private final String ext;
-    private final String resolution;
+    private final Integer height;      
+    private final Double audioBitrateKbps; 
+    private final boolean audioOnly;
     private final Double fileSizeMb;
     private final String label;
-    private final Integer height;
-    private final Double audioBitrateKbps;
 
-
-    public VideoFormat(String formatId, String ext, String resolution, Double fileSizeMb, String label, Integer height, Double audioBitrateKbps){
-
+    public VideoFormat(String formatId, String ext, Integer height, Double audioBitrateKbps,
+                        boolean audioOnly, Double fileSizeMb, String label) {
         this.formatId = formatId;
         this.ext = ext;
-        this.resolution = resolution;
+        this.height = height;
+        this.audioBitrateKbps = audioBitrateKbps;
+        this.audioOnly = audioOnly;
         this.fileSizeMb = fileSizeMb;
         this.label = label;
-        this.height  = height;
-        this.audioBitrateKbps = audioBitrateKbps;
     }
 
     public String getFormatId() {
@@ -31,8 +29,16 @@ public class VideoFormat {
         return ext;
     }
 
-    public String getResolution() {
-        return resolution;
+    public Integer getHeight() {
+        return height;
+    }
+
+    public Double getAudioBitrateKbps() {
+        return audioBitrateKbps;
+    }
+
+    public boolean isAudioOnly() {
+        return audioOnly;
     }
 
     public Double getFileSizeMb() {
@@ -43,16 +49,8 @@ public class VideoFormat {
         return label;
     }
 
-    public Integer getHeight() {
-        return height;
-    }
-
-    public Double getAudioBitrateKbps() {
-        return audioBitrateKbps;
-    }
-
     @Override
-     public String toString() {
+    public String toString() {
         return label;
     }
 }
