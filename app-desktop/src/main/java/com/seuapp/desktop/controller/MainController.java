@@ -3,11 +3,13 @@ package com.seuapp.desktop.controller;
 import com.seuapp.core.YtDlpService;
 import com.seuapp.core.model.OutputType;
 import com.seuapp.core.model.VideoFormat;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -30,21 +32,35 @@ public class MainController {
     private final YtDlpService ytDlpService =
             YtDlpService.withDefaultLocations(Paths.get(System.getProperty("user.dir")));
 
-    // guarda a lista completa (áudio + vídeo) vinda do yt-dlp, pra poder filtrar sem buscar de novo
     private List<VideoFormat> todosFormatos = List.of();
+
+    // espera 800ms sem digitação antes de buscar sozinho
+    private final PauseTransition buscaAutomatica = new PauseTransition(Duration.millis(800));
 
     @FXML
     public void initialize() {
         mp3Radio.setSelected(true);
 
         outputTypeGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> atualizarComboFiltrado());
+
+        buscaAutomatica.setOnFinished(e -> buscarFormatos());
+
+        urlField.textProperty().addListener((obs, oldText, newText) -> {
+            buscaAutomatica.stop(); // reinicia a contagem a cada mudança
+            if (!newText.trim().isEmpty()) {
+                buscaAutomatica.playFromStart();
+            }
+        });
     }
 
     @FXML
     private void onListFormats() {
+        buscarFormatos();
+    }
+
+    private void buscarFormatos() {
         String url = urlField.getText().trim();
         if (url.isEmpty()) {
-            statusLabel.setText("Cole um link do YouTube primeiro.");
             return;
         }
 
@@ -73,24 +89,20 @@ public class MainController {
         new Thread(task, "list-formats").start();
     }
 
-    /**
-     * Filtra a lista completa de formatos: só áudio (quando MP3 está selecionado)
-     * ou só vídeo (quando MP4 está selecionado), e repopula o ComboBox.
-     */
     private void atualizarComboFiltrado() {
-    boolean queroAudio = mp3Radio.isSelected();
+        boolean queroAudio = mp3Radio.isSelected();
 
-    List<VideoFormat> filtrados = todosFormatos.stream()
-            .filter(f -> f.isAudioOnly() == queroAudio)
-            .collect(Collectors.toList());
+        List<VideoFormat> filtrados = todosFormatos.stream()
+                .filter(f -> f.isAudioOnly() == queroAudio)
+                .collect(Collectors.toList());
 
-    formatComboBox.getItems().setAll(filtrados);
-    if (!filtrados.isEmpty()) {
-        formatComboBox.getSelectionModel().selectFirst();
+        formatComboBox.getItems().setAll(filtrados);
+        if (!filtrados.isEmpty()) {
+            formatComboBox.getSelectionModel().selectFirst();
+        }
+
+        statusLabel.setText("Formatos disponíveis: " + filtrados.size());
     }
-
-    statusLabel.setText("Formatos disponíveis: " + filtrados.size());
-}
 
     @FXML
     private void onDownload() {
