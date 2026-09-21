@@ -62,41 +62,86 @@ public class YtDlpService {
     }
 
     private List<VideoFormat> parseFormats(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(json);
-        JsonNode formats = root.get("formats");
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode root = mapper.readTree(json);
+    JsonNode formats = root.get("formats");
 
-        List<VideoFormat> result = new ArrayList<>();
-        if(formats == null || !formats.isArray()) {
-            return result;
-        }
-
-        for(JsonNode f : formats) {
-            String id = textOrNull(f, "format_id");
-            String ext = textOrNull(f, "ext");
-            String resolution = f.has("resolution") ? f.get("resolution").asText()
-                    : (f.has("height") && !f.get("height").isNull() ? f.get("height").asText() + "p" : "audio only");
-            Double sizeMb = null;
-            if(f.has("filesize") && !f.get("filesize").isNull()) {
-                sizeMb = f.get("filesize").asDouble() / (1024.0 * 1024.0);
-            } else if (f.has("filesize_approx") && !f.get("filesize_approx").isNull()){
-                 sizeMb = f.get("filesize_approx").asDouble() / (1024.0 * 1024.0);
-            }
-            
-            String label = buildLabel(id, ext, resolution, sizeMb);
-            result.add(new VideoFormat(id, ext, resolution, sizeMb, label));
-        }
+    List<VideoFormat> result = new ArrayList<>();
+    if (formats == null || !formats.isArray()) {
         return result;
     }
 
-    private String buildLabel(String id, String ext, String resolution, Double sizeMb) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(resolution).append("-").append(ext).append("(").append(id).append(")");
-        if(sizeMb != null) {
-            sb.append(String.format("~%.1f MB", sizeMb));
+    for (JsonNode f : formats) {
+        String vcodec = textOrNull(f, "vcodec");
+        String acodec = textOrNull(f, "acodec");
+
+        boolean semVideo = vcodec == null || "none".equals(vcodec);
+        boolean semAudio = acodec == null || "none".equals(acodec);
+
+        // descarta "storyboards" (miniaturas da barra de progresso) e formatos quebrados
+        if (semVideo && semAudio) {
+            continue;
         }
-        return sb.toString();
+
+        String id = textOrNull(f, "format_id");
+        String ext = textOrNull(f, "ext");
+        boolean audioOnly = semVideo; // tem áudio mas não tem vídeo
+
+        Integer height = f.has("height") && !f.get("height").isNull() ? f.get("height").asInt() : null;
+        Double abr = f.has("abr") && !f.get("abr").isNull() ? f.get("abr").asDouble() : null;
+
+        Double sizeMb = null;
+        if (f.has("filesize") && !f.get("filesize").isNull()) {
+            sizeMb = f.get("filesize").asDouble() / (1024.0 * 1024.0);
+        } else if (f.has("filesize_approx") && !f.get("filesize_approx").isNull()) {
+            sizeMb = f.get("filesize_approx").asDouble() / (1024.0 * 1024.0);
+        }
+
+        // pra formato de vídeo, só nos interessa quem tem altura definida (descarta lixo residual)
+        if (!audioOnly && height == null) {
+            continue;
+        }
+
+        String label = buildLabel(ext, height, abr, audioOnly, sizeMb);
+        result.add(new VideoFormat(id, ext, height, abr, audioOnly, sizeMb, label));
     }
+
+    // ordena do melhor pro pior: vídeo por resolução, áudio por bitrate
+    result.sort((a, b) -> {
+        if (a.isAudioOnly() && b.isAudioOnly()) {
+            double abrA = a.getAudioBitrateKbps() != null ? a.getAudioBitrateKbps() : 0;
+            double abrB = b.getAudioBitrateKbps() != null ? b.getAudioBitrateKbps() : 0;
+            return Double.compare(abrB, abrA);
+        }
+        int hA = a.getHeight() != null ? a.getHeight() : 0;
+        int hB = b.getHeight() != null ? b.getHeight() : 0;
+        return Integer.compare(hB, hA);
+    });
+
+    return result;
+}
+
+   private String buildLabel(String ext, Integer height, Double abr, boolean audioOnly, Double sizeMb) {
+    StringBuilder sb = new StringBuilder();
+
+    if (audioOnly) {
+        if (abr != null) {
+            sb.append(Math.round(abr)).append(" kbps");
+        } else {
+            sb.append("Áudio");
+        }
+    } else {
+        sb.append(height != null ? height + "p" : "Vídeo");
+    }
+
+    sb.append(" - ").append(ext != null ? ext.toUpperCase() : "?");
+
+    if (sizeMb != null) {
+        sb.append(String.format(" (~%.1f MB)", sizeMb));
+    }
+
+    return sb.toString();
+}
 
     private String textOrNull(JsonNode node, String field) {
         return node.has(field) && !node.get(field).isNull() ? node.get(field).asText() : null;
