@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,110 +22,144 @@ import java.util.stream.Stream;
 public class YtDlpService {
 
     private static final Pattern PROGRESS_PATTERN =
-            Pattern.compile("\\[download\\]\\s+(\\d{1,3}(?:\\.\\d+)?)%");
+            Pattern.compile(
+                    "\\[download\\]\\s+(\\d{1,3}(?:\\.\\d+)?)%"
+            );
 
     private final String ytDlpBinary;
     private final String ffmpegBinary;
 
-    public YtDlpService(String ytDlpBinary, String ffmpegBinary) {
+    public YtDlpService(
+            String ytDlpBinary,
+            String ffmpegBinary) {
+
         this.ytDlpBinary = ytDlpBinary;
         this.ffmpegBinary = ffmpegBinary;
     }
 
-    public static YtDlpService withDefaultLocations(Path appDir) {
+    public static YtDlpService withDefaultLocations() {
 
-        boolean windows = System.getProperty("os.name", "")
-                .toLowerCase()
-                .contains("win");
+        Path appDir =
+                PlatformUtils.applicationDirectory(
+                        YtDlpService.class
+                );
 
-        String ytDlpName = windows ? "yt-dlp.exe" : "yt-dlp";
-        String ffmpegName = windows ? "ffmpeg.exe" : "ffmpeg";
+        Path ytDlpPath =
+                PlatformUtils.findTool(
+                        appDir,
+                        "yt-dlp"
+                );
 
-        Path toolsDir = encontrarPastaTools(appDir);
+        Path ffmpegPath =
+                PlatformUtils.findTool(
+                        appDir,
+                        "ffmpeg"
+                );
 
-        System.out.println("Diretório inicial: " + appDir.toAbsolutePath());
-        System.out.println("Pasta tools encontrada: " + toolsDir);
+        String ytDlp =
+                ytDlpPath != null
+                        ? ytDlpPath.toString()
+                        : PlatformUtils.ytDlpFileName();
 
-        String ytDlp = ytDlpName;
-        String ffmpeg = ffmpegName;
+        String ffmpeg =
+                ffmpegPath != null
+                        ? ffmpegPath.toString()
+                        : PlatformUtils.ffmpegFileName();
 
-        if (toolsDir != null) {
+        System.out.println(
+                "Sistema: "
+                        + System.getProperty("os.name")
+        );
 
-            Path ytDlpPath = toolsDir.resolve(ytDlpName);
-            Path ffmpegPath = toolsDir.resolve(ffmpegName);
+        System.out.println(
+                "Arquitetura: "
+                        + PlatformUtils.architectureFolder()
+        );
 
-            System.out.println("yt-dlp procurado em: " + ytDlpPath);
-            System.out.println("ffmpeg procurado em: " + ffmpegPath);
+        System.out.println(
+                "Diretório da aplicação: "
+                        + appDir
+        );
 
-            if (Files.isRegularFile(ytDlpPath)) {
-                ytDlp = ytDlpPath.toAbsolutePath().toString();
-            }
+        System.out.println(
+                "yt-dlp: "
+                        + ytDlp
+        );
 
-            if (Files.isRegularFile(ffmpegPath)) {
-                ffmpeg = ffmpegPath.toAbsolutePath().toString();
-            }
-        }
+        System.out.println(
+                "ffmpeg: "
+                        + ffmpeg
+        );
 
-        System.out.println("yt-dlp final: " + ytDlp);
-        System.out.println("ffmpeg final: " + ffmpeg);
-
-        return new YtDlpService(ytDlp, ffmpeg);
+        return new YtDlpService(
+                ytDlp,
+                ffmpeg
+        );
     }
 
-    private static Path encontrarPastaTools(Path partida) {
+    /*
+     * Mantemos esse método caso algum outro código seu
+     * ainda esteja chamando a versão antiga.
+     */
+    public static YtDlpService withDefaultLocations(
+            Path ignored) {
 
-        Path atual = partida.toAbsolutePath();
-
-        for (int i = 0; i < 6 && atual != null; i++) {
-
-            Path candidato = atual.resolve("tools");
-
-            if (Files.isDirectory(candidato)) {
-                return candidato;
-            }
-
-            atual = atual.getParent();
-        }
-
-        return null;
+        return withDefaultLocations();
     }
 
-    public List<VideoFormat> listFormats(String url)
+    public List<VideoFormat> listFormats(
+            String url)
             throws IOException, InterruptedException {
 
-        ProcessBuilder pb = new ProcessBuilder(
-                ytDlpBinary,
-                "--ignore-config",
-                "--no-playlist",
-                "-J",
-                "--no-warnings",
-                url
-        );
+        ProcessBuilder pb =
+                new ProcessBuilder(
+                        ytDlpBinary,
+                        "--ignore-config",
+                        "--no-playlist",
+                        "-J",
+                        "--no-warnings",
+                        url
+                );
 
         pb.redirectErrorStream(false);
 
         Process process = pb.start();
 
-        String json = readAll(process.getInputStream());
-        String errOutput = readAll(process.getErrorStream());
+        String json =
+                readAll(
+                        process.getInputStream()
+                );
 
-        boolean terminou = process.waitFor(
-                60,
-                java.util.concurrent.TimeUnit.SECONDS
-        );
+        String errOutput =
+                readAll(
+                        process.getErrorStream()
+                );
+
+        boolean terminou =
+                process.waitFor(
+                        60,
+                        java.util.concurrent.TimeUnit.SECONDS
+                );
 
         if (!terminou) {
-            encerrarArvoreProcessos(process);
+
+            PlatformUtils.destroyProcessTree(
+                    process
+            );
+
             throw new IOException(
-                    "yt-dlp demorou demais para responder (timeout)."
+                    "yt-dlp demorou demais para responder."
             );
         }
 
-        int exit = process.exitValue();
+        int exit =
+                process.exitValue();
 
         if (exit != 0) {
+
             throw new IOException(
-                    "yt-dlp falhou ao consultar formatos (exit "
+                    "yt-dlp falhou ao consultar formatos "
+                            + "(exit "
                             + exit
                             + "): "
                             + errOutput
@@ -135,52 +169,83 @@ public class YtDlpService {
         return parseFormats(json);
     }
 
-    private List<VideoFormat> parseFormats(String json)
+    private List<VideoFormat> parseFormats(
+            String json)
             throws IOException {
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper =
+                new ObjectMapper();
 
-        JsonNode root = mapper.readTree(json);
-        JsonNode formats = root.get("formats");
+        JsonNode root =
+                mapper.readTree(json);
 
-        List<VideoFormat> result = new ArrayList<>();
+        JsonNode formats =
+                root.get("formats");
 
-        if (formats == null || !formats.isArray()) {
+        List<VideoFormat> result =
+                new ArrayList<>();
+
+        if (formats == null
+                || !formats.isArray()) {
+
             return result;
         }
 
         for (JsonNode f : formats) {
 
-            String vcodec = textOrNull(f, "vcodec");
-            String acodec = textOrNull(f, "acodec");
+            String vcodec =
+                    textOrNull(
+                            f,
+                            "vcodec"
+                    );
 
-            boolean semVideo =
-                    vcodec == null || "none".equals(vcodec);
+            String acodec =
+                    textOrNull(
+                            f,
+                            "acodec"
+                    );
 
-            boolean semAudio =
-                    acodec == null || "none".equals(acodec);
+            boolean hasVideo =
+                    vcodec != null
+                            && !"none".equals(vcodec);
 
-            
-            if (semVideo && semAudio) {
+            boolean hasAudio =
+                    acodec != null
+                            && !"none".equals(acodec);
+
+            /*
+             * Ignora formatos sem vídeo e sem áudio.
+             */
+            if (!hasVideo && !hasAudio) {
                 continue;
             }
 
-            String id = textOrNull(f, "format_id");
-            String ext = textOrNull(f, "ext");
+            String id =
+                    textOrNull(
+                            f,
+                            "format_id"
+                    );
 
-            boolean audioOnly = semVideo && !semAudio;
+            String ext =
+                    textOrNull(
+                            f,
+                            "ext"
+                    );
 
             Integer height =
-                    f.has("height") && !f.get("height").isNull()
+                    f.has("height")
+                            && !f.get("height").isNull()
                             ? f.get("height").asInt()
                             : null;
 
             Double abr =
-                    f.has("abr") && !f.get("abr").isNull()
+                    f.has("abr")
+                            && !f.get("abr").isNull()
                             ? f.get("abr").asDouble()
                             : null;
 
-            Double sizeMb = null;
+            Double sizeMb =
+                    null;
 
             if (f.has("filesize")
                     && !f.get("filesize").isNull()) {
@@ -198,7 +263,11 @@ public class YtDlpService {
                                 / (1024.0 * 1024.0);
             }
 
-            if (!audioOnly && height == null) {
+            /*
+             * Formato de vídeo sem resolução
+             * não é útil para nosso seletor.
+             */
+            if (hasVideo && height == null) {
                 continue;
             }
 
@@ -207,7 +276,8 @@ public class YtDlpService {
                             ext,
                             height,
                             abr,
-                            audioOnly,
+                            hasVideo,
+                            hasAudio,
                             sizeMb
                     );
 
@@ -217,43 +287,60 @@ public class YtDlpService {
                             ext,
                             height,
                             abr,
-                            audioOnly,
-                            audioOnly, sizeMb,
+                            hasVideo,
+                            hasAudio,
+                            sizeMb,
                             label
                     )
             );
         }
 
-        
-        result.sort((a, b) -> {
+        result.sort(
+                (a, b) -> {
 
-            if (a.isAudioOnly() && b.isAudioOnly()) {
+                    /*
+                     * Áudio:
+                     * maior bitrate primeiro.
+                     */
+                    if (a.isAudioOnly()
+                            && b.isAudioOnly()) {
 
-                double abrA =
-                        a.getAudioBitrateKbps() != null
-                                ? a.getAudioBitrateKbps()
-                                : 0;
+                        double abrA =
+                                a.getAudioBitrateKbps() != null
+                                        ? a.getAudioBitrateKbps()
+                                        : 0;
 
-                double abrB =
-                        b.getAudioBitrateKbps() != null
-                                ? b.getAudioBitrateKbps()
-                                : 0;
+                        double abrB =
+                                b.getAudioBitrateKbps() != null
+                                        ? b.getAudioBitrateKbps()
+                                        : 0;
 
-                return Double.compare(abrB, abrA);
-            }
+                        return Double.compare(
+                                abrB,
+                                abrA
+                        );
+                    }
 
-            int hA =
-                    a.getHeight() != null
-                            ? a.getHeight()
-                            : 0;
+                    /*
+                     * Vídeo:
+                     * maior resolução primeiro.
+                     */
+                    int heightA =
+                            a.getHeight() != null
+                                    ? a.getHeight()
+                                    : 0;
 
-            int hB =
-                    b.getHeight() != null
-                            ? b.getHeight()
-                            : 0;
+                    int heightB =
+                            b.getHeight() != null
+                                    ? b.getHeight()
+                                    : 0;
 
-            return Integer.compare(hB, hA);
-        });
+                    return Integer.compare(
+                            heightB,
+                            heightA
+                    );
+                }
+        );
 
         return result;
     }
@@ -262,17 +349,23 @@ public class YtDlpService {
             String ext,
             Integer height,
             Double abr,
-            boolean audioOnly,
+            boolean hasVideo,
+            boolean hasAudio,
             Double sizeMb) {
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb =
+                new StringBuilder();
 
-        if (audioOnly) {
+        if (!hasVideo && hasAudio) {
 
             if (abr != null) {
-                sb.append(Math.round(abr))
-                        .append(" kbps");
+
+                sb.append(
+                        Math.round(abr)
+                ).append(" kbps");
+
             } else {
+
                 sb.append("Áudio");
             }
 
@@ -283,12 +376,27 @@ public class YtDlpService {
                             ? height + "p"
                             : "Vídeo"
             );
+
+            if (hasAudio) {
+
+                sb.append(
+                        " (vídeo + áudio)"
+                );
+
+            } else {
+
+                sb.append(
+                        " (vídeo)"
+                );
+            }
         }
 
         sb.append(" - ")
                 .append(
                         ext != null
-                                ? ext.toUpperCase()
+                                ? ext.toUpperCase(
+                                        Locale.ROOT
+                                )
                                 : "?"
                 );
 
@@ -296,6 +404,7 @@ public class YtDlpService {
 
             sb.append(
                     String.format(
+                            Locale.ROOT,
                             " (~%.1f MB)",
                             sizeMb
                     )
@@ -317,111 +426,209 @@ public class YtDlpService {
 
     public int download(
             String url,
-            String formatId,
+            VideoFormat selectedFormat,
             OutputType outputType,
             Path outputDir,
             Consumer<Double> progressListener,
             Consumer<Process> onProcessoIniciado)
             throws IOException, InterruptedException {
 
-        Files.createDirectories(outputDir);
+        Files.createDirectories(
+                outputDir
+        );
 
-      
         Path tempDir =
-                outputDir.resolve(".yt-dlp-temp");
+                outputDir.resolve(
+                        ".yt-dlp-temp"
+                );
 
-       
-        apagarDiretorio(tempDir);
+        apagarDiretorio(
+                tempDir
+        );
 
-        Files.createDirectories(tempDir);
+        Files.createDirectories(
+                tempDir
+        );
 
-        List<String> command = new ArrayList<>();
+        List<String> command =
+                new ArrayList<>();
 
-        command.add(ytDlpBinary);
+        command.add(
+                ytDlpBinary
+        );
 
-      
-        command.add("--ignore-config");
+        command.add(
+                "--ignore-config"
+        );
 
-       
-        command.add("--no-playlist");
+        command.add(
+                "--no-playlist"
+        );
 
-        
-        command.add("--newline");
+        command.add(
+                "--newline"
+        );
 
-       
-        command.add("--ffmpeg-location");
-        command.add(ffmpegBinary);
+        command.add(
+                "--ffmpeg-location"
+        );
 
-       
-        command.add("--paths");
+        command.add(
+                ffmpegBinary
+        );
+
+        /*
+         * Diretório final.
+         */
+        command.add(
+                "--paths"
+        );
+
         command.add(
                 "home:"
-                        + outputDir.toAbsolutePath()
+                        + outputDir
+                                .toAbsolutePath()
         );
 
-      
-        command.add("--paths");
+        /*
+         * Diretório temporário.
+         */
+        command.add(
+                "--paths"
+        );
+
         command.add(
                 "temp:"
-                        + tempDir.toAbsolutePath()
+                        + tempDir
+                                .toAbsolutePath()
         );
 
-        command.add("-o");
+        command.add(
+                "-o"
+        );
+
         command.add(
                 "%(title)s [%(id)s].%(ext)s"
         );
 
         if (outputType == OutputType.MP3) {
 
-           
             command.add("-f");
+
             command.add(
-                    formatId != null
-                            ? formatId
-                            : "bestaudio"
+                    selectedFormat != null
+                            ? selectedFormat.getFormatId()
+                            : "ba"
             );
 
-            command.add("--extract-audio");
-            command.add("--audio-format");
-            command.add("mp3");
+            command.add(
+                    "--extract-audio"
+            );
 
-           
-            command.add("--audio-quality");
-            command.add("0");
+            command.add(
+                    "--audio-format"
+            );
+
+            command.add(
+                    "mp3"
+            );
+
+            command.add(
+                    "--audio-quality"
+            );
+
+            command.add(
+                    "0"
+            );
 
         } else {
 
-            
-            command.add("-f");
+            String formatExpression;
 
-            if (formatId != null) {
+            if (selectedFormat == null) {
 
-                command.add(
-                        formatId
-                                + "+?ba/b"
-                );
+                /*
+                 * Sem escolha específica:
+                 * prioriza MP4 + M4A.
+                 */
+                formatExpression =
+                        "bv*[ext=mp4]"
+                                + "+ba[ext=m4a]"
+                                + "/b[ext=mp4]"
+                                + "/bv*+ba/b";
+
+            } else if (
+                    selectedFormat.isVideoOnly()) {
+
+                /*
+                 * O usuário escolheu um vídeo sem áudio.
+                 *
+                 * Mantemos EXATAMENTE o vídeo escolhido
+                 * e adicionamos o melhor áudio.
+                 */
+                formatExpression =
+                        selectedFormat.getFormatId()
+                                + "+ba[ext=m4a]/ba";
 
             } else {
 
-                command.add(
-                        "bv*+?ba/b"
-                );
+                /*
+                 * O formato escolhido já possui áudio.
+                 *
+                 * Portanto não baixamos um segundo áudio.
+                 */
+                formatExpression =
+                        selectedFormat.getFormatId();
             }
 
-          
-            command.add("--merge-output-format");
-            command.add("mp4");
+            command.add(
+                    "-f"
+            );
 
-           
-            command.add("--remux-video");
-            command.add("mp4");
+            command.add(
+                    formatExpression
+            );
+
+            /*
+             * Se precisar juntar vídeo + áudio,
+             * o resultado será MP4.
+             */
+            command.add(
+                    "--merge-output-format"
+            );
+
+            command.add(
+                    "mp4"
+            );
+
+            /*
+             * Caso já exista um arquivo único em outro
+             * container compatível, remuxa para MP4.
+             *
+             * Remux não re-encoda o vídeo.
+             */
+            command.add(
+                    "--remux-video"
+            );
+
+            command.add(
+                    "mp4"
+            );
         }
 
-        command.add(url);
+        command.add(
+                url
+        );
 
         System.out.println(
-                "Executando comando: "
-                        + String.join(" ", command)
+                "Executando:"
+        );
+
+        System.out.println(
+                String.join(
+                        " ",
+                        command
+                )
         );
 
         ProcessBuilder pb =
@@ -429,13 +636,15 @@ public class YtDlpService {
 
         pb.redirectErrorStream(true);
 
-        Process process = pb.start();
+        Process process =
+                pb.start();
 
         if (onProcessoIniciado != null) {
-            onProcessoIniciado.accept(process);
-        }
 
-        int exitCode;
+            onProcessoIniciado.accept(
+                    process
+            );
+        }
 
         try (
                 BufferedReader reader =
@@ -449,24 +658,30 @@ public class YtDlpService {
 
             String line;
 
-            while ((line = reader.readLine()) != null) {
+            while (
+                    (line = reader.readLine())
+                            != null
+            ) {
 
-                if (progressListener != null) {
+                if (progressListener == null) {
+                    continue;
+                }
 
-                    Matcher matcher =
-                            PROGRESS_PATTERN.matcher(line);
-
-                    if (matcher.find()) {
-
-                        double percent =
-                                Double.parseDouble(
-                                        matcher.group(1)
-                                );
-
-                        progressListener.accept(
-                                percent
+                Matcher matcher =
+                        PROGRESS_PATTERN.matcher(
+                                line
                         );
-                    }
+
+                if (matcher.find()) {
+
+                    double percent =
+                            Double.parseDouble(
+                                    matcher.group(1)
+                            );
+
+                    progressListener.accept(
+                            percent
+                    );
                 }
             }
 
@@ -480,94 +695,65 @@ public class YtDlpService {
 
             if (!terminou) {
 
-                encerrarArvoreProcessos(process);
+                PlatformUtils.destroyProcessTree(
+                        process
+                );
+
+                apagarDiretorio(
+                        tempDir
+                );
 
                 throw new IOException(
                         "Download demorou demais e foi encerrado."
                 );
             }
 
-            exitCode = process.exitValue();
-
-          
-            apagarDiretorio(tempDir);
-        }
-
-        return exitCode;
-    }
-
-    private void encerrarArvoreProcessos(
-            Process process)
-            throws IOException, InterruptedException {
-
-        if (process == null) {
-            return;
-        }
-
-        if (!process.isAlive()) {
-            return;
-        }
-
-      
-        boolean windows =
-                System.getProperty(
-                        "os.name",
-                        ""
-                )
-                        .toLowerCase()
-                        .contains("win");
-
-        if (windows) {
-
-            Process killer =
-                    new ProcessBuilder(
-                            "taskkill",
-                            "/PID",
-                            String.valueOf(
-                                    process.pid()
-                            ),
-                            "/T",
-                            "/F"
-                    )
-                            .redirectErrorStream(true)
-                            .start();
-
-            killer.waitFor(
-                    10,
-                    java.util.concurrent.TimeUnit.SECONDS
+            apagarDiretorio(
+                    tempDir
             );
         }
 
-      
-        process.toHandle()
-                .descendants()
-                .forEach(
-                        ProcessHandle::destroyForcibly
-                );
-
-        process.destroyForcibly();
+        return process.exitValue();
     }
 
-    private void apagarDiretorio(Path diretorio) {
+    public void cancelarDownload(
+            Process process) {
+
+        PlatformUtils.destroyProcessTree(
+                process
+        );
+    }
+
+    private void apagarDiretorio(
+            Path diretorio) {
 
         if (diretorio == null
                 || !Files.exists(diretorio)) {
+
             return;
         }
 
-        try (Stream<Path> paths =
-                     Files.walk(diretorio)) {
+        try (
+                Stream<Path> paths =
+                        Files.walk(diretorio)
+        ) {
 
-            paths.sorted(
-                            Comparator.reverseOrder()
+            paths
+                    .sorted(
+                            java.util.Comparator
+                                    .reverseOrder()
                     )
                     .forEach(
                             path -> {
+
                                 try {
+
                                     Files.deleteIfExists(
                                             path
                                     );
+
                                 } catch (IOException e) {
+
                                     System.out.println(
                                             "Não foi possível apagar: "
                                                     + path
@@ -652,6 +838,7 @@ public class YtDlpService {
             if (!terminou) {
 
                 p.destroyForcibly();
+
                 return false;
             }
 
@@ -660,12 +847,9 @@ public class YtDlpService {
         } catch (IOException e) {
 
             System.out.println(
-                    "Erro ao executar: "
+                    "Erro ao executar "
                             + binario
-            );
-
-            System.out.println(
-                    "Motivo: "
+                            + ": "
                             + e.getMessage()
             );
 

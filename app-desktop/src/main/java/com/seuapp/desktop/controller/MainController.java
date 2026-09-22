@@ -13,9 +13,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.util.Duration;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -47,13 +45,7 @@ public class MainController {
     @FXML private Label statusLabel;
 
     private final YtDlpService ytDlpService =
-            YtDlpService.withDefaultLocations(
-                    Paths.get(
-                            System.getProperty(
-                                    "user.dir"
-                            )
-                    )
-            );
+            YtDlpService.withDefaultLocations();
 
     private List<VideoFormat> todosFormatos =
             List.of();
@@ -106,26 +98,59 @@ public class MainController {
 
     private void verificarBinarios() {
 
-        boolean ok =
-                ytDlpService.binariosDisponiveis();
+        Task<Boolean> task =
+                new Task<>() {
 
-        if (!ok) {
+                    @Override
+                    protected Boolean call() {
 
-            statusLabel.setText(
-                    "yt-dlp ou ffmpeg não encontrados. "
-                            + "Coloque os dois dentro da pasta tools/ "
-                            + "e reabra o app."
-            );
+                        return ytDlpService
+                                .binariosDisponiveis();
+                    }
+                };
 
-            listFormatsButton.setDisable(true);
-            downloadButton.setDisable(true);
-            cancelButton.setDisable(true);
-            urlField.setDisable(true);
-        }
+        task.setOnSucceeded(
+                e -> {
+
+                    boolean ok =
+                            task.getValue();
+
+                    if (!ok) {
+
+                        statusLabel.setText(
+                                "yt-dlp ou ffmpeg não encontrados."
+                        );
+
+                        listFormatsButton.setDisable(
+                                true
+                        );
+
+                        downloadButton.setDisable(
+                                true
+                        );
+
+                        urlField.setDisable(
+                                true
+                        );
+
+                    } else {
+
+                        statusLabel.setText(
+                                "Pronto."
+                        );
+                    }
+                }
+        );
+
+        new Thread(
+                task,
+                "check-binaries"
+        ).start();
     }
 
     @FXML
     private void onListFormats() {
+
         buscarFormatos();
     }
 
@@ -175,11 +200,20 @@ public class MainController {
 
                     atualizarComboFiltrado();
 
-                    statusLabel.setText(
-                            "Formatos carregados."
-                    );
-
                     travarInterface(false);
+
+                    if (todosFormatos.isEmpty()) {
+
+                        statusLabel.setText(
+                                "Nenhum formato encontrado."
+                        );
+
+                    } else {
+
+                        statusLabel.setText(
+                                "Formatos carregados."
+                        );
+                    }
                 }
         );
 
@@ -213,7 +247,7 @@ public class MainController {
 
             /*
              * MP3:
-             * somente formatos que possuem apenas áudio.
+             * somente áudio.
              */
             filtrados =
                     todosFormatos.stream()
@@ -228,20 +262,22 @@ public class MainController {
 
             /*
              * MP4:
-             * somente formatos de vídeo cujo container
-             * original já é MP4.
+             * somente formatos que possuem vídeo
+             * e que são originalmente MP4.
              *
-             * Isso impede o usuário de selecionar
-             * WebM e depois receber um resultado inesperado.
+             * Isso evita mostrar WebM ao usuário
+             * quando ele escolheu MP4.
              */
             filtrados =
                     todosFormatos.stream()
                             .filter(
                                     f ->
-                                            !f.isAudioOnly()
+                                            f.hasVideo()
                                                     && f.getExt() != null
                                                     && f.getExt()
-                                                    .equalsIgnoreCase("mp4")
+                                                    .equalsIgnoreCase(
+                                                            "mp4"
+                                                    )
                             )
                             .collect(
                                     Collectors.toList()
@@ -268,14 +304,29 @@ public class MainController {
     private void travarInterface(
             boolean travar) {
 
-        urlField.setDisable(travar);
-        listFormatsButton.setDisable(travar);
-        downloadButton.setDisable(travar);
+        urlField.setDisable(
+                travar
+        );
 
-        mp3Radio.setDisable(travar);
-        mp4Radio.setDisable(travar);
+        listFormatsButton.setDisable(
+                travar
+        );
 
-        formatComboBox.setDisable(travar);
+        downloadButton.setDisable(
+                travar
+        );
+
+        mp3Radio.setDisable(
+                travar
+        );
+
+        mp4Radio.setDisable(
+                travar
+        );
+
+        formatComboBox.setDisable(
+                travar
+        );
     }
 
     @FXML
@@ -314,11 +365,6 @@ public class MainController {
                         .getSelectionModel()
                         .getSelectedItem();
 
-        String formatId =
-                selectedFormat != null
-                        ? selectedFormat.getFormatId()
-                        : null;
-
         DirectoryChooser chooser =
                 new DirectoryChooser();
 
@@ -345,10 +391,6 @@ public class MainController {
 
         travarInterface(true);
 
-        /*
-         * Ainda não habilita.
-         * Só habilitamos quando o Process realmente iniciar.
-         */
         cancelButton.setDisable(true);
 
         progressBar.setProgress(0);
@@ -366,7 +408,7 @@ public class MainController {
 
                         return ytDlpService.download(
                                 url,
-                                formatId,
+                                selectedFormat,
                                 outputType,
                                 outputDir,
 
@@ -380,15 +422,17 @@ public class MainController {
                                                                 )
                                         ),
 
-                                processo -> {
+                                process -> {
 
                                     processoDownloadAtual =
-                                            processo;
+                                            process;
 
                                     Platform.runLater(
                                             () ->
                                                     cancelButton
-                                                            .setDisable(false)
+                                                            .setDisable(
+                                                                    false
+                                                            )
                                     );
                                 }
                         );
@@ -469,87 +513,22 @@ public class MainController {
                 "Cancelando..."
         );
 
-        try {
-
-            boolean windows =
-                    System.getProperty(
-                            "os.name",
-                            ""
-                    )
-                            .toLowerCase()
-                            .contains("win");
-
-            if (windows) {
-
-                /*
-                 * /T = mata os processos filhos também.
-                 * /F = força encerramento.
-                 */
-                Process killer =
-                        new ProcessBuilder(
-                                "taskkill",
-                                "/PID",
-                                String.valueOf(
-                                        processo.pid()
-                                ),
-                                "/T",
-                                "/F"
-                        )
-                                .redirectErrorStream(true)
-                                .start();
-
-                killer.waitFor(
-                        10,
-                        java.util.concurrent.TimeUnit.SECONDS
-                );
-
-            } else {
-
-                processo.toHandle()
-                        .descendants()
-                        .forEach(
-                                ProcessHandle::destroyForcibly
-                        );
-
-                processo.destroyForcibly();
-            }
-
-        } catch (IOException e) {
-
-            System.out.println(
-                    "Erro ao cancelar: "
-                            + e.getMessage()
-            );
-
-            processo.toHandle()
-                    .descendants()
-                    .forEach(
-                            ProcessHandle::destroyForcibly
-                    );
-
-            processo.destroyForcibly();
-
-        } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();
-
-            processo.toHandle()
-                    .descendants()
-                    .forEach(
-                            ProcessHandle::destroyForcibly
-                    );
-
-            processo.destroyForcibly();
-        }
+        ytDlpService.cancelarDownload(
+                processo
+        );
     }
 
     private void finalizarDownload() {
 
         processoDownloadAtual = null;
 
-        cancelButton.setDisable(true);
+        cancelButton.setDisable(
+                true
+        );
 
-        travarInterface(false);
+        travarInterface(
+                false
+        );
     }
 
     private String mapearErro(
@@ -571,6 +550,9 @@ public class MainController {
                             .getSimpleName();
         }
 
+        String lower =
+                mensagem.toLowerCase();
+
         if (mensagem.contains(
                 "Private video")) {
 
@@ -582,31 +564,21 @@ public class MainController {
                 || mensagem.contains(
                 "This video is unavailable")) {
 
-            return "Vídeo indisponível (pode ter sido removido).";
+            return "Vídeo indisponível.";
         }
 
         if (mensagem.contains(
                 "Sign in to confirm your age")) {
 
-            return "Este vídeo tem restrição de idade e não pode ser baixado assim.";
+            return "Este vídeo tem restrição de idade.";
         }
-
-        if (mensagem.contains(
-                "Video unavailable. This video contains content")) {
-
-            return "Vídeo bloqueado por direitos autorais.";
-        }
-
-        String lower =
-                mensagem.toLowerCase();
 
         if (lower.contains(
                 "temporary failure")
                 || lower.contains(
                 "name or service not known")) {
 
-            return "Sem conexão com a internet. "
-                    + "Verifique sua rede e tente de novo.";
+            return "Sem conexão com a internet.";
         }
 
         if (mensagem.contains(
@@ -615,6 +587,12 @@ public class MainController {
                 "looks truncated")) {
 
             return "O link parece estar incompleto ou incorreto.";
+        }
+
+        if (lower.contains(
+                "requested format is not available")) {
+
+            return "O formato selecionado não está disponível para este vídeo.";
         }
 
         return "Erro: " + mensagem;
