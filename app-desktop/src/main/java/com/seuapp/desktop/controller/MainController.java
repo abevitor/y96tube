@@ -12,11 +12,13 @@ import javafx.stage.DirectoryChooser;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 public class MainController {
 
@@ -206,14 +208,53 @@ public class MainController {
     }
 
     @FXML
-    private void onCancelarDownload() {
-        Process processo = processoDownloadAtual;
-        if (processo != null && processo.isAlive()) {
-            cancelamentoSolicitado = true;
-            processo.destroyForcibly();
-            statusLabel.setText("Cancelando...");
-        }
+private void onCancelarDownload() {
+
+    cancelamentoSolicitado = true;
+
+    Process processo = processoDownloadAtual;
+
+    if (processo == null || !processo.isAlive()) {
+        return;
     }
+
+    statusLabel.setText("Cancelando...");
+
+    try {
+
+        long pid = processo.pid();
+
+        Process killer = new ProcessBuilder(
+                "taskkill",
+                "/PID",
+                String.valueOf(pid),
+                "/T",
+                "/F"
+        ).redirectErrorStream(true).start();
+
+        killer.waitFor();
+
+    } catch (IOException e) {
+
+        System.out.println("Erro ao cancelar: " + e.getMessage());
+
+        processo.toHandle()
+                .descendants()
+                .forEach(ProcessHandle::destroyForcibly);
+
+        processo.destroyForcibly();
+
+    } catch (InterruptedException e) {
+
+        Thread.currentThread().interrupt();
+
+        processo.toHandle()
+                .descendants()
+                .forEach(ProcessHandle::destroyForcibly);
+
+        processo.destroyForcibly();
+    }
+}
 
     private void finalizarDownload() {
         processoDownloadAtual = null;

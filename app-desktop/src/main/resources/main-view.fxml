@@ -29,10 +29,10 @@
 
     <Label text="Qualidade / formato (apenas para MP4):"/>
     <ComboBox fx:id="formatComboBox" maxWidth="Infinity"/>
-    <Hbox>
+    <HBox>
         <Button fx:id="downloadButton" text="Baixar" onAction="#onDownload"/>
         <Button fx:id="cancelButton" text="Cancelar" onAction="#onCancelarDownload" disable="true"/>
-    </Hbox>
+    </HBox>
     <ProgressBar fx:id="progressBar" progress="0" maxWidth="Infinity"/>
     <Label fx:id="statusLabel" text="Pronto." wrapText="true"/>
 </VBox>
