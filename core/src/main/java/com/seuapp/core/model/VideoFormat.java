@@ -4,19 +4,31 @@ public class VideoFormat {
 
     private final String formatId;
     private final String ext;
-    private final Integer height;      
-    private final Double audioBitrateKbps; 
-    private final boolean audioOnly;
+    private final Integer height;
+    private final Double audioBitrateKbps;
+
+    private final boolean hasVideo;
+    private final boolean hasAudio;
+
     private final Double fileSizeMb;
     private final String label;
 
-    public VideoFormat(String formatId, String ext, Integer height, Double audioBitrateKbps,
-                        boolean audioOnly, Double fileSizeMb, String label) {
+    public VideoFormat(
+            String formatId,
+            String ext,
+            Integer height,
+            Double audioBitrateKbps,
+            boolean hasVideo,
+            boolean hasAudio,
+            Double fileSizeMb,
+            String label) {
+
         this.formatId = formatId;
         this.ext = ext;
         this.height = height;
         this.audioBitrateKbps = audioBitrateKbps;
-        this.audioOnly = audioOnly;
+        this.hasVideo = hasVideo;
+        this.hasAudio = hasAudio;
         this.fileSizeMb = fileSizeMb;
         this.label = label;
     }
@@ -37,16 +49,28 @@ public class VideoFormat {
         return audioBitrateKbps;
     }
 
+    public boolean hasVideo() {
+        return hasVideo;
+    }
+
+    public boolean hasAudio() {
+        return hasAudio;
+    }
+
     public boolean isAudioOnly() {
-        return audioOnly;
+        return hasAudio && !hasVideo;
+    }
+
+    public boolean isVideoOnly() {
+        return hasVideo && !hasAudio;
+    }
+
+    public boolean isCombined() {
+        return hasVideo && hasAudio;
     }
 
     public Double getFileSizeMb() {
         return fileSizeMb;
-    }
-
-    public String getLabel() {
-        return label;
     }
 
     @Override
