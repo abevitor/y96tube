@@ -175,7 +175,7 @@ public class MainController {
             @Override
             protected Integer call() throws Exception {
                 return ytDlpService.download(url, formatId, outputType, outputDir,
-                        percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100.0)));
+                        percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100.0)), null);
             }
         };
 

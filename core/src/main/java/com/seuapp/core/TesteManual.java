@@ -17,7 +17,7 @@ public class TesteManual {
                 "137",
                 OutputType.MP4,
                 Paths.get("downloads-teste"),
-                percent -> System.out.println("Progresso: " + percent + "%"));
+                percent -> System.out.println("Progresso: " + percent + "%"), null);
         System.out.println("Terminou com código: " + resultado2);
 
     }
