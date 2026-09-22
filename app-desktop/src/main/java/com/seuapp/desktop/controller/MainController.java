@@ -106,12 +106,12 @@ public class MainController {
             todosFormatos = task.getValue();
             atualizarComboFiltrado();
             statusLabel.setText("Formatos carregados.");
-            travarInterface(true);
+            travarInterface(false);
         });
 
         task.setOnFailed(e -> {
             statusLabel.setText(mapearErro(task.getException()));
-            travarInterface(true);
+            travarInterface(false);
         });
 
         new Thread(task, "list-formats").start();

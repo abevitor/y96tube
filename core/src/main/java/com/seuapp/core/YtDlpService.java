@@ -80,22 +80,27 @@ private static Path encontrarPastaTools(Path partida) {
     return null;
 }
 
-    public List<VideoFormat> listFormats(String url) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(ytDlpBinary, "-J", "--no-warnings", url);
-        pb.redirectErrorStream(false);
-        Process process = pb.start();
+   public List<VideoFormat> listFormats(String url) throws IOException, InterruptedException {
+    ProcessBuilder pb = new ProcessBuilder(ytDlpBinary, "-J", "--no-warnings", url);
+    pb.redirectErrorStream(false);
+    Process process = pb.start();
 
-        String json = readAll(process.getInputStream());
-        String errOutput = readAll(process.getErrorStream());
+    String json = readAll(process.getInputStream());
+    String errOutput = readAll(process.getErrorStream());
 
-        int exit = process.waitFor();
-        if(exit != 0) {
-            throw new IOException("yt-dlp falhou ao consultar formatos (exit " + exit + "): " + errOutput);
-
-        }
-
-        return parseFormats(json);
+    boolean terminou = process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS);
+    if (!terminou) {
+        process.destroyForcibly();
+        throw new IOException("yt-dlp demorou demais para responder (timeout).");
     }
+
+    int exit = process.exitValue();
+    if (exit != 0) {
+        throw new IOException("yt-dlp falhou ao consultar formatos (exit " + exit + "): " + errOutput);
+    }
+
+    return parseFormats(json);
+}
 
     private List<VideoFormat> parseFormats(String json) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
