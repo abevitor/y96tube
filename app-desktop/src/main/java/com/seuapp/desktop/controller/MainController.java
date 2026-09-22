@@ -93,7 +93,7 @@ public class MainController {
         }
 
         statusLabel.setText("Consultando formatos disponíveis...");
-        listFormatsButton.setDisable(true);
+        travarInterface(true);
 
         Task<List<VideoFormat>> task = new Task<>() {
             @Override
@@ -106,12 +106,12 @@ public class MainController {
             todosFormatos = task.getValue();
             atualizarComboFiltrado();
             statusLabel.setText("Formatos carregados.");
-            listFormatsButton.setDisable(false);
+            travarInterface(true);
         });
 
         task.setOnFailed(e -> {
             statusLabel.setText(mapearErro(task.getException()));
-            listFormatsButton.setDisable(false);
+            travarInterface(true);
         });
 
         new Thread(task, "list-formats").start();
@@ -130,6 +130,15 @@ public class MainController {
         }
 
         statusLabel.setText("Formatos disponíveis: " + filtrados.size());
+    }
+
+    private void travarInterface(boolean travar) {
+        urlField.setDisable(travar);
+        listFormatsButton.setDisable(travar);
+        downloadButton.setDisable(travar);
+        mp3Radio.setDisable(travar);
+        mp4Radio.setDisable(travar);
+        formatComboBox.setDisable(travar);
     }
 
     @FXML
@@ -158,7 +167,7 @@ public class MainController {
         }
         Path outputDir = destination.toPath();
 
-        downloadButton.setDisable(true);
+        travarInterface(true);
         progressBar.setProgress(0);
         statusLabel.setText("Baixando...");
 
@@ -173,43 +182,47 @@ public class MainController {
         task.setOnSucceeded(e -> {
             int exitCode = task.getValue();
             statusLabel.setText(exitCode == 0 ? "Download concluído!" : "yt-dlp terminou com erro (código " + exitCode + ")");
-            downloadButton.setDisable(false);
+            travarInterface(false);
         });
 
         task.setOnFailed(e -> {
             statusLabel.setText(mapearErro(task.getException()));
-            downloadButton.setDisable(false);
+            travarInterface(false);
         });
 
         new Thread(task, "download").start();
     }
 
-    /**
-     * Traduz os erros mais comuns do yt-dlp pra mensagens que fazem sentido
-     * pra quem está usando o app, em vez de mostrar a exception técnica crua.
-     */
-    private String mapearErro(Throwable erro) {
-        String mensagem = erro != null && erro.getMessage() != null ? erro.getMessage() : "";
-
-        if (mensagem.contains("Private video")) {
-            return "Este vídeo é privado e não pode ser baixado.";
-        }
-        if (mensagem.contains("Video unavailable") || mensagem.contains("This video is unavailable")) {
-            return "Vídeo indisponível (pode ter sido removido).";
-        }
-        if (mensagem.contains("Sign in to confirm your age")) {
-            return "Este vídeo tem restrição de idade e não pode ser baixado assim.";
-        }
-        if (mensagem.contains("Video unavailable. This video contains content")) {
-            return "Vídeo bloqueado por direitos autorais.";
-        }
-        if (mensagem.toLowerCase().contains("temporary failure") || mensagem.toLowerCase().contains("name or service not known")) {
-            return "Sem conexão com a internet. Verifique sua rede e tente de novo.";
-        }
-        if (mensagem.contains("Incomplete YouTube ID") || mensagem.contains("looks truncated")) {
-            return "O link parece estar incompleto ou incorreto.";
-        }
-
-        return "Erro: " + (mensagem.isEmpty() ? "algo deu errado." : mensagem);
+ private String mapearErro(Throwable erro) {
+    if (erro == null) {
+        return "Ocorreu um erro desconhecido.";
     }
+
+    String mensagem = erro.getMessage();
+    if (mensagem == null || mensagem.isBlank()) {
+        mensagem = erro.getClass().getSimpleName();
+    }
+
+    if (mensagem.contains("Private video")) {
+        return "Este vídeo é privado e não pode ser baixado.";
+    }
+    if (mensagem.contains("Video unavailable") || mensagem.contains("This video is unavailable")) {
+        return "Vídeo indisponível (pode ter sido removido).";
+    }
+    if (mensagem.contains("Sign in to confirm your age")) {
+        return "Este vídeo tem restrição de idade e não pode ser baixado assim.";
+    }
+    if (mensagem.contains("Video unavailable. This video contains content")) {
+        return "Vídeo bloqueado por direitos autorais.";
+    }
+    if (mensagem.toLowerCase().contains("temporary failure") || mensagem.toLowerCase().contains("name or service not known")) {
+        return "Sem conexão com a internet. Verifique sua rede e tente de novo.";
+    }
+    if (mensagem.contains("Incomplete YouTube ID") || mensagem.contains("looks truncated")) {
+        return "O link parece estar incompleto ou incorreto.";
+    }
+
+    return "Erro: " + mensagem;
+}
+    
 }
