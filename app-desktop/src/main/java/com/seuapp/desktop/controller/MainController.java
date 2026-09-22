@@ -32,6 +32,7 @@ public class MainController {
     @FXML private RadioButton mp4Radio;
     @FXML private ToggleGroup outputTypeGroup;
     @FXML private Button downloadButton;
+    @FXML private Button cancelButton;
     @FXML private ProgressBar progressBar;
     @FXML private Label statusLabel;
 
@@ -41,6 +42,10 @@ public class MainController {
     private List<VideoFormat> todosFormatos = List.of();
 
     private final PauseTransition buscaAutomatica = new PauseTransition(Duration.millis(800));
+
+    private volatile Process processoDownloadAtual;
+    
+    private volatile boolean cancelamentoSolicitado = false;
 
     @FXML
     public void initialize() {
@@ -60,11 +65,6 @@ public class MainController {
         verificarBinarios();
     }
 
-    /**
-     * Roda uma vez ao abrir o app: confirma que yt-dlp/ffmpeg estão acessíveis.
-     * Se não estiverem, trava a interface com uma mensagem clara em vez de deixar
-     * o usuário descobrir isso só quando clicar em algo.
-     */
     private void verificarBinarios() {
         boolean ok = ytDlpService.binariosDisponiveis();
         if (!ok) {
@@ -132,6 +132,7 @@ public class MainController {
         statusLabel.setText("Formatos disponíveis: " + filtrados.size());
     }
 
+   
     private void travarInterface(boolean travar) {
         urlField.setDisable(travar);
         listFormatsButton.setDisable(travar);
@@ -167,7 +168,9 @@ public class MainController {
         }
         Path outputDir = destination.toPath();
 
+        cancelamentoSolicitado = false;
         travarInterface(true);
+        cancelButton.setDisable(false);
         progressBar.setProgress(0);
         statusLabel.setText("Baixando...");
 
@@ -175,54 +178,78 @@ public class MainController {
             @Override
             protected Integer call() throws Exception {
                 return ytDlpService.download(url, formatId, outputType, outputDir,
-                        percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100.0)), null);
+                        percent -> Platform.runLater(() -> progressBar.setProgress(percent / 100.0)),
+                        processo -> processoDownloadAtual = processo);
             }
         };
 
         task.setOnSucceeded(e -> {
             int exitCode = task.getValue();
-            statusLabel.setText(exitCode == 0 ? "Download concluído!" : "yt-dlp terminou com erro (código " + exitCode + ")");
-            travarInterface(false);
+            if (cancelamentoSolicitado) {
+                statusLabel.setText("Download cancelado.");
+            } else {
+                statusLabel.setText(exitCode == 0 ? "Download concluído!" : "yt-dlp terminou com erro (código " + exitCode + ")");
+            }
+            finalizarDownload();
         });
 
         task.setOnFailed(e -> {
-            statusLabel.setText(mapearErro(task.getException()));
-            travarInterface(false);
+            if (cancelamentoSolicitado) {
+                statusLabel.setText("Download cancelado.");
+            } else {
+                statusLabel.setText(mapearErro(task.getException()));
+            }
+            finalizarDownload();
         });
 
         new Thread(task, "download").start();
     }
 
- private String mapearErro(Throwable erro) {
-    if (erro == null) {
-        return "Ocorreu um erro desconhecido.";
+    @FXML
+    private void onCancelarDownload() {
+        Process processo = processoDownloadAtual;
+        if (processo != null && processo.isAlive()) {
+            cancelamentoSolicitado = true;
+            processo.destroyForcibly();
+            statusLabel.setText("Cancelando...");
+        }
     }
 
-    String mensagem = erro.getMessage();
-    if (mensagem == null || mensagem.isBlank()) {
-        mensagem = erro.getClass().getSimpleName();
+    private void finalizarDownload() {
+        processoDownloadAtual = null;
+        cancelButton.setDisable(true);
+        travarInterface(false);
     }
 
-    if (mensagem.contains("Private video")) {
-        return "Este vídeo é privado e não pode ser baixado.";
-    }
-    if (mensagem.contains("Video unavailable") || mensagem.contains("This video is unavailable")) {
-        return "Vídeo indisponível (pode ter sido removido).";
-    }
-    if (mensagem.contains("Sign in to confirm your age")) {
-        return "Este vídeo tem restrição de idade e não pode ser baixado assim.";
-    }
-    if (mensagem.contains("Video unavailable. This video contains content")) {
-        return "Vídeo bloqueado por direitos autorais.";
-    }
-    if (mensagem.toLowerCase().contains("temporary failure") || mensagem.toLowerCase().contains("name or service not known")) {
-        return "Sem conexão com a internet. Verifique sua rede e tente de novo.";
-    }
-    if (mensagem.contains("Incomplete YouTube ID") || mensagem.contains("looks truncated")) {
-        return "O link parece estar incompleto ou incorreto.";
-    }
+    private String mapearErro(Throwable erro) {
+        if (erro == null) {
+            return "Ocorreu um erro desconhecido.";
+        }
 
-    return "Erro: " + mensagem;
-}
-    
+        String mensagem = erro.getMessage();
+        if (mensagem == null || mensagem.isBlank()) {
+            mensagem = erro.getClass().getSimpleName();
+        }
+
+        if (mensagem.contains("Private video")) {
+            return "Este vídeo é privado e não pode ser baixado.";
+        }
+        if (mensagem.contains("Video unavailable") || mensagem.contains("This video is unavailable")) {
+            return "Vídeo indisponível (pode ter sido removido).";
+        }
+        if (mensagem.contains("Sign in to confirm your age")) {
+            return "Este vídeo tem restrição de idade e não pode ser baixado assim.";
+        }
+        if (mensagem.contains("Video unavailable. This video contains content")) {
+            return "Vídeo bloqueado por direitos autorais.";
+        }
+        if (mensagem.toLowerCase().contains("temporary failure") || mensagem.toLowerCase().contains("name or service not known")) {
+            return "Sem conexão com a internet. Verifique sua rede e tente de novo.";
+        }
+        if (mensagem.contains("Incomplete YouTube ID") || mensagem.contains("looks truncated")) {
+            return "O link parece estar incompleto ou incorreto.";
+        }
+
+        return "Erro: " + mensagem;
+    }
 }
