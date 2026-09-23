@@ -12,9 +12,12 @@ out/
 *.iml
 
 # Binários externos (yt-dlp, ffmpeg) — não versionar, são grandes e específicos de SO
-tools/*.exe
-tools/yt-dlp
-tools/ffmpeg
+tools/**/*.exe
+tools/**/yt-dlp
+tools/**/yt-dlp_macos
+tools/**/yt-dlp_linux
+tools/**/ffmpeg
 
 # Pasta de teste com os downloads que você já fez
 downloads-teste/
+

@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'org.beryx.runtime' version '1.13.1'
 }
 
 javafx {
@@ -18,4 +19,20 @@ dependencies {
 
 tasks.named('run') {
     workingDir = rootProject.projectDir
+}
+
+
+runtime {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    modules = ['java.base', 'java.desktop', 'java.naming', 'java.logging']
+
+    jpackage {
+        imageName = 'YoutubeConverter'
+        installerName = 'YoutubeConverter'
+
+    
+        imageOptions = ['--app-content', file("${rootProject.projectDir}/tools").absolutePath]
+
+        
+    }
 }
