@@ -10,7 +10,7 @@ javafx {
 }
 
 application {
-    mainClass = 'com.seuapp.desktop.App'
+    mainClass = 'com.seuapp.desktop.Launcher'
 }
 
 dependencies {
@@ -21,18 +21,26 @@ tasks.named('run') {
     workingDir = rootProject.projectDir
 }
 
-
 runtime {
-    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-    modules = ['java.base', 'java.desktop', 'java.naming', 'java.logging']
+    options = [
+        '--strip-debug',
+        '--compress', '2',
+        '--no-header-files',
+        '--no-man-pages'
+    ]
+
+    launcher {
+        noConsole = true
+    }
 
     jpackage {
         imageName = 'YoutubeConverter'
-        installerName = 'YoutubeConverter'
+        appVersion = '0.1.0'
+        skipInstaller = false
 
-    
-        imageOptions = ['--app-content', file("${rootProject.projectDir}/tools").absolutePath]
-
-        
+        installerOptions = [
+            '--win-menu',
+            '--win-shortcut'
+        ]
     }
 }
