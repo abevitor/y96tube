@@ -21,7 +21,19 @@ tasks.named('run') {
     workingDir = rootProject.projectDir
 }
 
+def osName = System.getProperty('os.name').toLowerCase()
+
+def isWindows = osName.contains('win')
+def isLinux = osName.contains('linux')
+def isMac = osName.contains('mac')
+
 runtime {
+    additive = true
+
+    modules = [
+        'jdk.unsupported'
+    ]
+
     options = [
         '--strip-debug',
         '--compress', '2',
@@ -38,9 +50,21 @@ runtime {
         appVersion = '0.1.0'
         skipInstaller = false
 
-        installerOptions = [
-            '--win-menu',
-            '--win-shortcut'
-        ]
+        imageOptions = isWindows
+                ? ['--win-console']
+                : []
+
+        installerType =
+                isWindows ? 'msi' :
+                isLinux ? 'deb' :
+                isMac ? 'dmg' :
+                null
+
+        installerOptions = isWindows
+                ? [
+                    '--win-menu',
+                    '--win-shortcut'
+                ]
+                : []
     }
 }
