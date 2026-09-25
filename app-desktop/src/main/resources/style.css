@@ -1,0 +1,177 @@
+/* ============================================================
+   YouTube Converter — tema inspirado em Blame! (Tsutomu Nihei)
+   ============================================================ */
+
+.root-pane {
+    -fx-background-color: #0a0a0c;
+    -fx-font-family: "Consolas", "Cascadia Mono", "Courier New", monospace;
+}
+
+/* ---------- Título ---------- */
+
+.title-label {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e8e8ea;
+    -fx-letter-spacing: 4px;
+}
+
+/* ---------- Texto geral ---------- */
+
+.label {
+    -fx-text-fill: #8a8a92;
+    -fx-font-size: 12px;
+    -fx-letter-spacing: 1px;
+}
+
+#statusLabel {
+    -fx-text-fill: #5f5f68;
+    -fx-font-size: 11px;
+}
+
+/* ---------- Campo de texto ---------- */
+
+.text-field {
+    -fx-background-color: #101012;
+    -fx-text-fill: #d8d8dc;
+    -fx-prompt-text-fill: #3d3d44;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-color: #2a2a30;
+    -fx-border-width: 1px;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 13px;
+}
+
+.text-field:focused {
+    -fx-border-color: #3aa0ff;
+    -fx-background-color: #0d0d10;
+}
+
+/* ---------- Botões ---------- */
+
+.button {
+    -fx-background-color: #16161a;
+    -fx-text-fill: #c4c4ca;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-color: #2e2e34;
+    -fx-border-width: 1px;
+    -fx-font-size: 12px;
+    -fx-letter-spacing: 1px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #1e1e24;
+    -fx-border-color: #3aa0ff;
+    -fx-text-fill: #ffffff;
+}
+
+.button:disabled {
+    -fx-opacity: 0.35;
+    -fx-cursor: default;
+}
+
+/* Botão principal de baixar — o único ponto com o acento cheio */
+#downloadButton {
+    -fx-background-color: #3aa0ff;
+    -fx-text-fill: #060608;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+
+#downloadButton:hover {
+    -fx-background-color: #5cb2ff;
+}
+
+/* Cancelar — deliberadamente discreto, sem competir com o acento */
+#cancelButton {
+    -fx-background-color: transparent;
+    -fx-border-color: #4a2020;
+    -fx-text-fill: #b06060;
+}
+
+#cancelButton:hover {
+    -fx-border-color: #ff4d4d;
+    -fx-text-fill: #ff4d4d;
+}
+
+/* ---------- Rádios ---------- */
+
+.radio-button {
+    -fx-text-fill: #9a9aa2;
+    -fx-font-size: 12px;
+    -fx-letter-spacing: 1px;
+}
+
+.radio-button .radio {
+    -fx-background-color: #101012;
+    -fx-border-color: #3a3a42;
+    -fx-border-radius: 0;
+    -fx-background-radius: 0;
+    -fx-border-width: 1px;
+}
+
+.radio-button:selected .dot {
+    -fx-background-color: #3aa0ff;
+    -fx-background-radius: 0;
+}
+
+.radio-button:selected .radio {
+    -fx-border-color: #3aa0ff;
+}
+
+/* ---------- ComboBox ---------- */
+
+.combo-box {
+    -fx-background-color: #101012;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-color: #2a2a30;
+    -fx-border-width: 1px;
+    -fx-mark-color: #6a6a72;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #c4c4ca;
+    -fx-font-size: 12px;
+    -fx-padding: 6px 10px;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #101012;
+    -fx-border-color: #3aa0ff;
+    -fx-border-width: 1px;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #1e1e24;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #16161a;
+    -fx-text-fill: #3aa0ff;
+}
+
+/* ---------- ProgressBar ---------- */
+
+.progress-bar {
+    -fx-background-color: transparent;
+}
+
+.progress-bar .track {
+    -fx-background-color: #101012;
+    -fx-background-radius: 0;
+    -fx-border-color: #2a2a30;
+    -fx-border-width: 1px;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #3aa0ff;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}

@@ -12,7 +12,7 @@
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="YouTube Converter"/>
+    <Label text="YouTube Converter" styleClass="title-label"/>
 
     <HBox spacing="8">
         <TextField fx:id="urlField" promptText="Cole o link do YouTube aqui" HBox.hgrow="ALWAYS"/>
