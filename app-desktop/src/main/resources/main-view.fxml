@@ -5,34 +5,68 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 
-<VBox spacing="14" xmlns="http://javafx.com/javafx"
+<VBox spacing="14"
+      xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.seuapp.desktop.controller.MainController">
+
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="YouTube Converter" styleClass="title-label"/>
+    <Label text="YouTube Converter"
+           styleClass="title-label"/>
 
     <HBox spacing="8">
-        <TextField fx:id="urlField" promptText="Cole o link do YouTube aqui" HBox.hgrow="ALWAYS"/>
-        <Button fx:id="listFormatsButton" text="Buscar formatos" onAction="#onListFormats"/>
+        <TextField fx:id="urlField"
+                   promptText="Cole o link do YouTube aqui"
+                   HBox.hgrow="ALWAYS"/>
+
+        <Button fx:id="listFormatsButton"
+                text="Buscar formatos"
+                onAction="#onListFormats"/>
     </HBox>
 
     <HBox spacing="16">
+
         <fx:define>
             <ToggleGroup fx:id="outputTypeGroup"/>
         </fx:define>
-        <RadioButton fx:id="mp3Radio" text="MP3 (áudio)" toggleGroup="$outputTypeGroup"/>
-        <RadioButton fx:id="mp4Radio" text="MP4 (vídeo)" toggleGroup="$outputTypeGroup"/>
+
+        <RadioButton fx:id="mp3Radio"
+                     text="MP3 (áudio)"
+                     toggleGroup="$outputTypeGroup"/>
+
+        <RadioButton fx:id="mp4Radio"
+                     text="MP4 (vídeo)"
+                     toggleGroup="$outputTypeGroup"/>
+
     </HBox>
 
     <Label text="Qualidade / formato (apenas para MP4):"/>
-    <ComboBox fx:id="formatComboBox" maxWidth="Infinity"/>
-    <HBox>
-        <Button fx:id="downloadButton" text="Baixar" onAction="#onDownload"/>
-        <Button fx:id="cancelButton" text="Cancelar" onAction="#onCancelarDownload" disable="true"/>
+
+    <ComboBox fx:id="formatComboBox"
+              maxWidth="Infinity"/>
+
+    <HBox spacing="8">
+
+        <Button fx:id="downloadButton"
+                text="Baixar"
+                onAction="#onDownload"/>
+
+        <Button fx:id="cancelButton"
+                text="Cancelar"
+                onAction="#onCancelarDownload"
+                disable="true"/>
+
     </HBox>
-    <ProgressBar fx:id="progressBar" progress="0" maxWidth="Infinity"/>
-    <Label fx:id="statusLabel" text="Pronto." wrapText="true"/>
+
+    <ProgressBar fx:id="progressBar"
+                 progress="0"
+                 maxWidth="Infinity"/>
+
+    <Label fx:id="statusLabel"
+           text="Pronto."
+           wrapText="true"/>
+
 </VBox>

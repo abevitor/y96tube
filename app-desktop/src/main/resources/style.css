@@ -1,177 +1,393 @@
-/* ============================================================
-   YouTube Converter — tema inspirado em Blame! (Tsutomu Nihei)
-   ============================================================ */
+/* =========================================================
+   Y96TUBE
+   CLEAN INDUSTRIAL / BLAME! INSPIRED
+   ========================================================= */
 
-.root-pane {
-    -fx-background-color: #0a0a0c;
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+.root {
+    -fx-background-color: #E7EBEA;
     -fx-font-family: "Consolas", "Cascadia Mono", "Courier New", monospace;
 }
 
-/* ---------- Título ---------- */
+
+/* =========================================================
+   TITULO
+   ========================================================= */
 
 .title-label {
-    -fx-font-size: 22px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #e8e8ea;
-    -fx-letter-spacing: 4px;
+    -fx-text-fill: #202827;
+
+    -fx-padding: 0 0 10 0;
 }
 
-/* ---------- Texto geral ---------- */
+
+/* =========================================================
+   LABELS
+   ========================================================= */
 
 .label {
-    -fx-text-fill: #8a8a92;
+    -fx-text-fill: #5D6866;
     -fx-font-size: 12px;
-    -fx-letter-spacing: 1px;
 }
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
 
 #statusLabel {
-    -fx-text-fill: #5f5f68;
+    -fx-text-fill: #687572;
     -fx-font-size: 11px;
+
+    -fx-padding: 8 0 0 0;
 }
 
-/* ---------- Campo de texto ---------- */
+
+/* =========================================================
+   TEXT FIELD
+   ========================================================= */
 
 .text-field {
-    -fx-background-color: #101012;
-    -fx-text-fill: #d8d8dc;
-    -fx-prompt-text-fill: #3d3d44;
-    -fx-background-radius: 0;
-    -fx-border-radius: 0;
-    -fx-border-color: #2a2a30;
-    -fx-border-width: 1px;
-    -fx-padding: 8px 10px;
+    -fx-background-color: #F4F6F5;
+
+    -fx-text-fill: #202827;
+
+    -fx-prompt-text-fill: #98A4A1;
+
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+
+    -fx-border-color: #B7C0BE;
+    -fx-border-width: 1;
+
+    -fx-padding: 10 12;
+
     -fx-font-size: 13px;
 }
 
-.text-field:focused {
-    -fx-border-color: #3aa0ff;
-    -fx-background-color: #0d0d10;
+
+.text-field:hover {
+    -fx-border-color: #8E9B98;
 }
 
-/* ---------- Botões ---------- */
+
+.text-field:focused {
+    -fx-background-color: #FFFFFF;
+
+    -fx-border-color: #48B8AA;
+
+    -fx-border-width: 1.5;
+
+    -fx-text-fill: #18201F;
+}
+
+
+/* =========================================================
+   BOTOES
+   ========================================================= */
 
 .button {
-    -fx-background-color: #16161a;
-    -fx-text-fill: #c4c4ca;
-    -fx-background-radius: 0;
-    -fx-border-radius: 0;
-    -fx-border-color: #2e2e34;
-    -fx-border-width: 1px;
+    -fx-background-color: #F4F6F5;
+
+    -fx-text-fill: #394341;
+
     -fx-font-size: 12px;
-    -fx-letter-spacing: 1px;
-    -fx-padding: 8px 16px;
+
+    -fx-padding: 9 16;
+
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+
+    -fx-border-color: #B3BDBA;
+    -fx-border-width: 1;
+
     -fx-cursor: hand;
 }
 
+
 .button:hover {
-    -fx-background-color: #1e1e24;
-    -fx-border-color: #3aa0ff;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #E9EEEC;
+
+    -fx-text-fill: #202827;
+
+    -fx-border-color: #48B8AA;
 }
+
+
+.button:pressed {
+    -fx-background-color: #DDE5E2;
+
+    -fx-border-color: #31998D;
+}
+
 
 .button:disabled {
-    -fx-opacity: 0.35;
-    -fx-cursor: default;
+    -fx-opacity: 0.45;
 }
 
-/* Botão principal de baixar — o único ponto com o acento cheio */
+
+/* =========================================================
+   BOTAO DOWNLOAD
+   ========================================================= */
+
 #downloadButton {
-    -fx-background-color: #3aa0ff;
-    -fx-text-fill: #060608;
+    -fx-background-color: #48B8AA;
+
+    -fx-text-fill: #FFFFFF;
+
     -fx-font-weight: bold;
-    -fx-border-color: transparent;
+
+    -fx-border-color: #48B8AA;
+
+    -fx-border-width: 1;
+
+    -fx-padding: 10 22;
 }
+
 
 #downloadButton:hover {
-    -fx-background-color: #5cb2ff;
+    -fx-background-color: #5FC8BB;
+
+    -fx-border-color: #5FC8BB;
+
+    -fx-text-fill: #FFFFFF;
 }
 
-/* Cancelar — deliberadamente discreto, sem competir com o acento */
+
+#downloadButton:pressed {
+    -fx-background-color: #369B90;
+}
+
+
+/* =========================================================
+   BOTAO CANCELAR
+   ========================================================= */
+
 #cancelButton {
     -fx-background-color: transparent;
-    -fx-border-color: #4a2020;
-    -fx-text-fill: #b06060;
+
+    -fx-text-fill: #8B5D5D;
+
+    -fx-border-color: #C8AAAA;
+
+    -fx-border-width: 1;
 }
+
 
 #cancelButton:hover {
-    -fx-border-color: #ff4d4d;
-    -fx-text-fill: #ff4d4d;
+    -fx-background-color: #F4EAEA;
+
+    -fx-text-fill: #A54848;
+
+    -fx-border-color: #A54848;
 }
 
-/* ---------- Rádios ---------- */
+
+/* =========================================================
+   RADIO BUTTON
+   ========================================================= */
 
 .radio-button {
-    -fx-text-fill: #9a9aa2;
+    -fx-text-fill: #4E5A57;
+
     -fx-font-size: 12px;
-    -fx-letter-spacing: 1px;
 }
+
+
+.radio-button:hover {
+    -fx-text-fill: #202827;
+}
+
+
+/* =========================================================
+   RADIO
+   ========================================================= */
 
 .radio-button .radio {
-    -fx-background-color: #101012;
-    -fx-border-color: #3a3a42;
-    -fx-border-radius: 0;
-    -fx-background-radius: 0;
-    -fx-border-width: 1px;
+    -fx-background-color: #F4F6F5;
+
+    -fx-border-color: #AEB9B6;
+
+    -fx-border-width: 1;
+
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
 }
 
-.radio-button:selected .dot {
-    -fx-background-color: #3aa0ff;
-    -fx-background-radius: 0;
-}
 
 .radio-button:selected .radio {
-    -fx-border-color: #3aa0ff;
+    -fx-background-color: #EAF7F5;
+
+    -fx-border-color: #48B8AA;
 }
 
-/* ---------- ComboBox ---------- */
+
+.radio-button:selected .dot {
+    -fx-background-color: #48B8AA;
+
+    -fx-background-radius: 1;
+}
+
+
+/* =========================================================
+   COMBO BOX
+   ========================================================= */
 
 .combo-box {
-    -fx-background-color: #101012;
-    -fx-background-radius: 0;
-    -fx-border-radius: 0;
-    -fx-border-color: #2a2a30;
-    -fx-border-width: 1px;
-    -fx-mark-color: #6a6a72;
+    -fx-background-color: #F4F6F5;
+
+    -fx-border-color: #B7C0BE;
+
+    -fx-border-width: 1;
+
+    -fx-background-radius: 2;
+    -fx-border-radius: 2;
+
+    -fx-mark-color: #60706C;
 }
+
+
+.combo-box:hover {
+    -fx-border-color: #8E9B98;
+}
+
+
+.combo-box:focused {
+    -fx-border-color: #48B8AA;
+}
+
+
+/* =========================================================
+   COMBO BOX - LIST CELL
+   ========================================================= */
 
 .combo-box .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: #c4c4ca;
+
+    -fx-text-fill: #3F4A47;
+
     -fx-font-size: 12px;
-    -fx-padding: 6px 10px;
+
+    -fx-padding: 7 10;
 }
+
+
+/* =========================================================
+   COMBO BOX - POPUP
+   ========================================================= */
 
 .combo-box-popup .list-view {
-    -fx-background-color: #101012;
-    -fx-border-color: #3aa0ff;
-    -fx-border-width: 1px;
+    -fx-background-color: #F4F6F5;
+
+    -fx-border-color: #48B8AA;
+
+    -fx-border-width: 1;
 }
+
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #F4F6F5;
+
+    -fx-text-fill: #4E5A57;
+
+    -fx-padding: 8 10;
+}
+
 
 .combo-box-popup .list-cell:hover {
-    -fx-background-color: #1e1e24;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: #E4EEEB;
+
+    -fx-text-fill: #202827;
 }
+
 
 .combo-box-popup .list-cell:filled:selected {
-    -fx-background-color: #16161a;
-    -fx-text-fill: #3aa0ff;
+    -fx-background-color: #DCEDE9;
+
+    -fx-text-fill: #258A7F;
 }
 
-/* ---------- ProgressBar ---------- */
+
+/* =========================================================
+   PROGRESS BAR
+   ========================================================= */
 
 .progress-bar {
     -fx-background-color: transparent;
 }
 
+
 .progress-bar .track {
-    -fx-background-color: #101012;
-    -fx-background-radius: 0;
-    -fx-border-color: #2a2a30;
-    -fx-border-width: 1px;
+    -fx-background-color: #D6DEDC;
+
+    -fx-border-color: #B7C0BE;
+
+    -fx-border-width: 1;
+
+    -fx-background-radius: 2;
 }
 
+
 .progress-bar .bar {
-    -fx-background-color: #3aa0ff;
-    -fx-background-radius: 0;
+    -fx-background-color: #48B8AA;
+
+    -fx-background-radius: 1;
+
     -fx-background-insets: 0;
+}
+
+
+/* =========================================================
+   SCROLL BAR
+   ========================================================= */
+
+.scroll-bar {
+    -fx-background-color: #E7EBEA;
+}
+
+
+.scroll-bar .track {
+    -fx-background-color: #DCE2E0;
+}
+
+
+.scroll-bar .thumb {
+    -fx-background-color: #AAB6B3;
+
+    -fx-background-radius: 2;
+}
+
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #7F8D89;
+}
+
+
+/* =========================================================
+   FOCUS
+   ========================================================= */
+
+.button:focused,
+.combo-box:focused,
+.text-field:focused,
+.radio-button:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+
+/* =========================================================
+   SEPARADORES
+   ========================================================= */
+
+.separator .line {
+    -fx-border-color: #C6CFCD;
+
+    -fx-border-width: 1 0 0 0;
 }

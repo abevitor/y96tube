@@ -14,7 +14,7 @@ public class App extends Application {
         Parent root = loader.load();
 
         Scene scene = new Scene(root, 520, 360);
-        scene.getStylesheets().add(getClass().getResource("./style.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setTitle("Youtube Converter");
         stage.setScene(scene);
         stage.show();
