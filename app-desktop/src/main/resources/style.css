@@ -1069,20 +1069,24 @@
     -fx-background-color: #D8DFDC;
 
     -fx-border-color: #BCC7C3;
-
     -fx-border-width: 1;
 
     -fx-background-radius: 3;
-
     -fx-border-radius: 3;
 
     -fx-min-width: 150;
-
     -fx-min-height: 85;
 
     -fx-pref-width: 150;
-
     -fx-pref-height: 85;
+
+    -fx-max-width: 150;
+    -fx-max-height: 85;
+}
+
+.thumbnail-container .image-view {
+    -fx-fit-width: 150;
+    -fx-fit-height: 85;
 }
 
 

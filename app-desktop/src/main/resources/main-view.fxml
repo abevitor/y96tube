@@ -134,15 +134,20 @@
 
                 <!-- THUMBNAIL -->
 
-                <StackPane styleClass="thumbnail-container">
+<StackPane styleClass="thumbnail-container"
+           minWidth="150"
+           minHeight="85"
+           prefWidth="150"
+           prefHeight="85"
+           maxWidth="150"
+           maxHeight="85">
 
-                    <ImageView fx:id="thumbnailImage"
-                               fitWidth="150"
-                               fitHeight="85"
-                               preserveRatio="true"/>
-
-                </StackPane>
-
+    <ImageView fx:id="thumbnailImage"
+               fitWidth="150"
+               fitHeight="85"
+               preserveRatio="true"
+               smooth="true"/>
+</StackPane>
 
                 <!-- INFORMAÇÕES DO VÍDEO -->
 
