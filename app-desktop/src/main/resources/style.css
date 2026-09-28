@@ -1041,3 +1041,108 @@
 .dark-mode .separator .line {
     -fx-border-color: #3D4745;
 }
+
+/* =========================================================
+   PREVIEW DO VIDEO
+   ========================================================= */
+
+.video-preview {
+    -fx-background-color: #E7ECEA;
+
+    -fx-border-color: #C7D0CD;
+
+    -fx-border-width: 1;
+
+    -fx-background-radius: 5;
+
+    -fx-border-radius: 5;
+
+    -fx-padding: 10;
+}
+
+
+/* =========================================================
+   THUMBNAIL
+   ========================================================= */
+
+.thumbnail-container {
+    -fx-background-color: #D8DFDC;
+
+    -fx-border-color: #BCC7C3;
+
+    -fx-border-width: 1;
+
+    -fx-background-radius: 3;
+
+    -fx-border-radius: 3;
+
+    -fx-min-width: 150;
+
+    -fx-min-height: 85;
+
+    -fx-pref-width: 150;
+
+    -fx-pref-height: 85;
+}
+
+
+/* =========================================================
+   TITULO DO VIDEO
+   ========================================================= */
+
+.video-title {
+    -fx-text-fill: #26302E;
+
+    -fx-font-family:
+        "Segoe UI",
+        "Arial",
+        sans-serif;
+
+    -fx-font-size: 13px;
+
+    -fx-font-weight: 700;
+}
+
+
+/* =========================================================
+   CANAL
+   ========================================================= */
+
+.video-channel {
+    -fx-text-fill: #74817E;
+
+    -fx-font-family:
+        "Segoe UI",
+        "Arial",
+        sans-serif;
+
+    -fx-font-size: 11px;
+}
+
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+.dark-mode .video-preview {
+    -fx-background-color: #292F2E;
+
+    -fx-border-color: #414B49;
+}
+
+
+.dark-mode .thumbnail-container {
+    -fx-background-color: #202625;
+
+    -fx-border-color: #46514F;
+}
+
+
+.dark-mode .video-title {
+    -fx-text-fill: #E4ECEA;
+}
+
+
+.dark-mode .video-channel {
+    -fx-text-fill: #879591;
+}
