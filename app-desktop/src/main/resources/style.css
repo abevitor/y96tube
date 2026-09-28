@@ -1,12 +1,7 @@
-/* =========================================================
-   Y96TUBE
-   CLEAN INDUSTRIAL UI
-   BLAME! INSPIRED
-   ========================================================= */
 
 
 /* =========================================================
-   JANELA
+   JANELA PRINCIPAL
    ========================================================= */
 
 .window-root {
@@ -33,16 +28,16 @@
 
 
 /* =========================================================
-   ICONE
+   ICONE DA APLICAÇÃO
    ========================================================= */
 
 .title-bar .image-view {
-    -fx-opacity: 0.9;
+    -fx-opacity: 0.90;
 }
 
 
 /* =========================================================
-   NOME DO APP
+   NOME DA JANELA
    ========================================================= */
 
 .window-title {
@@ -73,25 +68,22 @@
 
     -fx-border-width: 0;
 
-    -fx-text-fill: #596663;
+    -fx-border-color: transparent;
 
-    -fx-font-family:
-        "Segoe UI Symbol",
-        "Segoe UI",
-        sans-serif;
+    -fx-text-fill: transparent;
 
-    -fx-font-size: 15px;
+    -fx-font-size: 0;
 
     -fx-padding: 0;
 
     -fx-cursor: hand;
+
+    -fx-content-display: CENTER;
 }
 
 
 .window-control:hover {
     -fx-background-color: #D2D9D6;
-
-    -fx-text-fill: #202826;
 }
 
 
@@ -101,36 +93,62 @@
 
 
 /* =========================================================
-   ACESSIBILIDADE
+   ICONE SVG
+   ========================================================= */
+
+.svg-icon {
+    -fx-fill: #596663;
+
+    -fx-scale-x: 0.85;
+    -fx-scale-y: 0.85;
+}
+
+
+.window-control:hover .svg-icon {
+    -fx-fill: #202826;
+}
+
+
+/* =========================================================
+   BOTAO ACESSIBILIDADE
    ========================================================= */
 
 .accessibility-button {
-    -fx-font-size: 16px;
+    -fx-background-color: transparent;
 }
 
 
 .accessibility-button:hover {
     -fx-background-color: #CDD9D6;
+}
 
-    -fx-text-fill: #2D8E83;
+
+.accessibility-button:hover .svg-icon {
+    -fx-fill: #2D8E83;
 }
 
 
 /* =========================================================
-   FECHAR
+   BOTAO FECHAR
    ========================================================= */
 
 .close-button:hover {
     -fx-background-color: #D95353;
+}
 
-    -fx-text-fill: #FFFFFF;
+
+.close-button:hover .svg-icon {
+    -fx-fill: #FFFFFF;
 }
 
 
 .close-button:pressed {
     -fx-background-color: #B83B3B;
+}
 
-    -fx-text-fill: #FFFFFF;
+
+.close-button:pressed .svg-icon {
+    -fx-fill: #FFFFFF;
 }
 
 
@@ -144,7 +162,7 @@
 
 
 /* =========================================================
-   TITULO
+   TITULO PRINCIPAL
    ========================================================= */
 
 .title-label {
@@ -164,7 +182,7 @@
 
 
 /* =========================================================
-   LABEL
+   LABELS
    ========================================================= */
 
 .label {
@@ -200,7 +218,7 @@
 
 
 /* =========================================================
-   TEXT FIELD
+   CAMPO DE URL
    ========================================================= */
 
 .text-field {
@@ -246,7 +264,7 @@
 
 
 /* =========================================================
-   BOTOES
+   BOTOES GERAIS
    ========================================================= */
 
 .button {
@@ -299,7 +317,7 @@
 
 
 /* =========================================================
-   DOWNLOAD
+   BOTAO DOWNLOAD
    ========================================================= */
 
 #downloadButton {
@@ -312,6 +330,10 @@
     -fx-font-weight: 700;
 
     -fx-padding: 10 23;
+
+    -fx-background-radius: 4;
+
+    -fx-border-radius: 4;
 }
 
 
@@ -319,16 +341,20 @@
     -fx-background-color: #5CC6B8;
 
     -fx-border-color: #5CC6B8;
+
+    -fx-text-fill: #FFFFFF;
 }
 
 
 #downloadButton:pressed {
     -fx-background-color: #379C91;
+
+    -fx-border-color: #379C91;
 }
 
 
 /* =========================================================
-   CANCELAR
+   BOTAO CANCELAR
    ========================================================= */
 
 #cancelButton {
@@ -349,6 +375,15 @@
 }
 
 
+#cancelButton:pressed {
+    -fx-background-color: #F3DEDE;
+
+    -fx-border-color: #AA4444;
+
+    -fx-text-fill: #8B3030;
+}
+
+
 /* =========================================================
    RADIO BUTTON
    ========================================================= */
@@ -362,6 +397,8 @@
         sans-serif;
 
     -fx-font-size: 12px;
+
+    -fx-cursor: hand;
 }
 
 
@@ -413,6 +450,8 @@
     -fx-border-radius: 4;
 
     -fx-mark-color: #66736F;
+
+    -fx-cursor: hand;
 }
 
 
@@ -443,7 +482,7 @@
 
 
 /* =========================================================
-   COMBO POPUP
+   COMBO BOX POPUP
    ========================================================= */
 
 .combo-box-popup .list-view {
@@ -550,6 +589,17 @@
 
 
 /* =========================================================
+   SEPARADORES
+   ========================================================= */
+
+.separator .line {
+    -fx-border-color: #C5CFCC;
+
+    -fx-border-width: 1 0 0 0;
+}
+
+
+/* =========================================================
    =========================================================
    MODO ESCURO
    =========================================================
@@ -562,7 +612,9 @@
 }
 
 
-/* TITLE BAR */
+/* =========================================================
+   DARK MODE - TITLE BAR
+   ========================================================= */
 
 .dark-mode .title-bar {
     -fx-background-color: #2B3231;
@@ -576,26 +628,59 @@
 }
 
 
-/* CONTROLES */
+/* =========================================================
+   DARK MODE - CONTROLES DA JANELA
+   ========================================================= */
 
 .dark-mode .window-control {
-    -fx-text-fill: #A5B2AF;
+    -fx-text-fill: transparent;
 }
 
 
 .dark-mode .window-control:hover {
     -fx-background-color: #394240;
-
-    -fx-text-fill: #FFFFFF;
 }
 
 
-/* FECHAR */
+.dark-mode .window-control:hover .svg-icon {
+    -fx-fill: #FFFFFF;
+}
+
+
+/* =========================================================
+   DARK MODE - ICONE SVG
+   ========================================================= */
+
+.dark-mode .svg-icon {
+    -fx-fill: #A5B2AF;
+}
+
+
+/* =========================================================
+   DARK MODE - ACESSIBILIDADE
+   ========================================================= */
+
+.dark-mode .accessibility-button:hover {
+    -fx-background-color: #3B4946;
+}
+
+
+.dark-mode .accessibility-button:hover .svg-icon {
+    -fx-fill: #77DCCE;
+}
+
+
+/* =========================================================
+   DARK MODE - FECHAR
+   ========================================================= */
 
 .dark-mode .close-button:hover {
     -fx-background-color: #C94E4E;
+}
 
-    -fx-text-fill: #FFFFFF;
+
+.dark-mode .close-button:hover .svg-icon {
+    -fx-fill: #FFFFFF;
 }
 
 
@@ -604,30 +689,27 @@
 }
 
 
-/* ACESSIBILIDADE */
-
-.dark-mode .accessibility-button:hover {
-    -fx-background-color: #3B4946;
-
-    -fx-text-fill: #77DCCE;
-}
-
-
-/* CONTEUDO */
+/* =========================================================
+   DARK MODE - AREA PRINCIPAL
+   ========================================================= */
 
 .dark-mode .content-area {
     -fx-background-color: #202625;
 }
 
 
-/* TITULO */
+/* =========================================================
+   DARK MODE - TITULO
+   ========================================================= */
 
 .dark-mode .title-label {
     -fx-text-fill: #E4ECEA;
 }
 
 
-/* LABELS */
+/* =========================================================
+   DARK MODE - LABELS
+   ========================================================= */
 
 .dark-mode .label {
     -fx-text-fill: #A8B4B1;
@@ -639,14 +721,18 @@
 }
 
 
-/* STATUS */
+/* =========================================================
+   DARK MODE - STATUS
+   ========================================================= */
 
 .dark-mode #statusLabel {
     -fx-text-fill: #879591;
 }
 
 
-/* TEXT FIELD */
+/* =========================================================
+   DARK MODE - TEXT FIELD
+   ========================================================= */
 
 .dark-mode .text-field {
     -fx-background-color: #2A3130;
@@ -673,7 +759,9 @@
 }
 
 
-/* BOTOES */
+/* =========================================================
+   DARK MODE - BOTOES
+   ========================================================= */
 
 .dark-mode .button {
     -fx-background-color: #2B3331;
@@ -695,10 +783,14 @@
 
 .dark-mode .button:pressed {
     -fx-background-color: #3E4A47;
+
+    -fx-border-color: #5CC6B8;
 }
 
 
-/* DOWNLOAD */
+/* =========================================================
+   DARK MODE - DOWNLOAD
+   ========================================================= */
 
 .dark-mode #downloadButton {
     -fx-background-color: #4CB8AA;
@@ -711,10 +803,14 @@
 
 .dark-mode #downloadButton:hover {
     -fx-background-color: #62CEBF;
+
+    -fx-border-color: #62CEBF;
 }
 
 
-/* CANCELAR */
+/* =========================================================
+   DARK MODE - CANCELAR
+   ========================================================= */
 
 .dark-mode #cancelButton {
     -fx-background-color: transparent;
@@ -734,7 +830,16 @@
 }
 
 
-/* RADIO */
+.dark-mode #cancelButton:pressed {
+    -fx-background-color: #472D2D;
+
+    -fx-border-color: #D26B6B;
+}
+
+
+/* =========================================================
+   DARK MODE - RADIO
+   ========================================================= */
 
 .dark-mode .radio-button {
     -fx-text-fill: #B3BFBC;
@@ -765,7 +870,9 @@
 }
 
 
-/* COMBO */
+/* =========================================================
+   DARK MODE - COMBO BOX
+   ========================================================= */
 
 .dark-mode .combo-box {
     -fx-background-color: #2A3130;
@@ -791,7 +898,9 @@
 }
 
 
-/* POPUP */
+/* =========================================================
+   DARK MODE - POPUP
+   ========================================================= */
 
 .dark-mode .combo-box-popup .list-view {
     -fx-background-color: #292F2E;
@@ -821,7 +930,9 @@
 }
 
 
-/* PROGRESS */
+/* =========================================================
+   DARK MODE - PROGRESS
+   ========================================================= */
 
 .dark-mode .progress-bar .track {
     -fx-background-color: #2B3331;
@@ -835,7 +946,9 @@
 }
 
 
-/* SCROLL */
+/* =========================================================
+   DARK MODE - SCROLLBAR
+   ========================================================= */
 
 .dark-mode .scroll-bar {
     -fx-background-color: #202625;
@@ -854,4 +967,13 @@
 
 .dark-mode .scroll-bar .thumb:hover {
     -fx-background-color: #707D79;
+}
+
+
+/* =========================================================
+   DARK MODE - SEPARADORES
+   ========================================================= */
+
+.dark-mode .separator .line {
+    -fx-border-color: #3D4745;
 }

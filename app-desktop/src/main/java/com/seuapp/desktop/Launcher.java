@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.scene.shape.SVGPath;
 
 import java.io.InputStream;
 
@@ -19,6 +20,13 @@ public class Launcher extends Application {
 
     private double dragOffsetX;
     private double dragOffsetY;
+
+    private SVGPath criarIcone(String path) {
+    SVGPath icon = new SVGPath();
+    icon.setContent(path);
+    icon.getStyleClass().add("svg-icon");
+    return icon;
+}
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -69,7 +77,7 @@ public class Launcher extends Application {
         // =====================================================
 
         InputStream iconStream =
-                getClass().getResourceAsStream("/icons/y96tube.png");
+                getClass().getResourceAsStream("/icons/y96.jfif");
 
         Image appIcon = null;
 
@@ -203,87 +211,137 @@ public class Launcher extends Application {
         });
 
         // =====================================================
-        // MINIMIZAR
-        // =====================================================
+// ICONE MINIMIZAR
+// =====================================================
 
-        minimizeButton.setOnAction(event -> {
+SVGPath minimizeIcon = criarIcone(
+        "M2 8 H14"
+);
 
-            primaryStage.setIconified(true);
+minimizeButton.setText("");
+minimizeButton.setGraphic(minimizeIcon);
 
-        });
+// =====================================================
+// ICONE MAXIMIZAR
+// =====================================================
 
-        // =====================================================
-        // MAXIMIZAR / RESTAURAR
-        // =====================================================
+SVGPath maximizeIcon = criarIcone(
+        "M2 2 H14 V14 H2 Z"
+);
 
-        maximizeButton.setOnAction(event -> {
+maximizeButton.setText("");
+maximizeButton.setGraphic(maximizeIcon);
 
-            primaryStage.setMaximized(
-                    !primaryStage.isMaximized()
-            );
+// =====================================================
+// ICONE FECHAR
+// =====================================================
 
-        });
+SVGPath closeIcon = criarIcone(
+        "M2 2 L14 14 M14 2 L2 14"
+);
 
-        // Muda o símbolo quando maximiza
-        primaryStage.maximizedProperty().addListener(
-                (observable, oldValue, maximized) -> {
+closeButton.setText("");
+closeButton.setGraphic(closeIcon);
 
-                    maximizeButton.setText(
-                            maximized ? "❐" : "□"
-                    );
+// =====================================================
+// ICONE ACESSIBILIDADE
+// =====================================================
 
-                }
-        );
+SVGPath darkModeIcon = criarIcone(
+        "M14 8 A6 6 0 1 1 8 2 A5 5 0 0 0 14 8 Z"
+);
 
-        // =====================================================
-        // FECHAR
-        // =====================================================
+accessibilityButton.setText("");
+accessibilityButton.setGraphic(darkModeIcon);
 
-        closeButton.setOnAction(event -> {
+// =====================================================
+// MINIMIZAR
+// =====================================================
 
-            primaryStage.close();
+minimizeButton.setOnAction(event -> {
 
-        });
+    primaryStage.setIconified(true);
 
-        // =====================================================
-        // ACESSIBILIDADE / MODO ESCURO
-        // =====================================================
+});
 
-        Tooltip accessibilityTooltip =
-                new Tooltip("Alternar modo escuro");
+// =====================================================
+// MAXIMIZAR / RESTAURAR
+// =====================================================
 
-        accessibilityButton.setTooltip(
-                accessibilityTooltip
-        );
+maximizeButton.setOnAction(event -> {
 
-        accessibilityButton.setOnAction(event -> {
+    primaryStage.setMaximized(
+            !primaryStage.isMaximized()
+    );
 
-            boolean darkMode =
-                    root.getStyleClass().contains("dark-mode");
+});
 
-            if (darkMode) {
+// =====================================================
+// ALTERAR ICONE DE MAXIMIZAR
+// =====================================================
 
-                root.getStyleClass().remove("dark-mode");
+primaryStage.maximizedProperty().addListener(
+        (observable, oldValue, maximized) -> {
 
-                accessibilityButton.setText("☾");
+            if (maximized) {
 
-                accessibilityTooltip.setText(
-                        "Ativar modo escuro"
+                maximizeIcon.setContent(
+                        "M3 5 H11 V13 H3 Z M5 3 H13 V11"
                 );
 
             } else {
 
-                root.getStyleClass().add("dark-mode");
-
-                accessibilityButton.setText("☀");
-
-                accessibilityTooltip.setText(
-                        "Ativar modo claro"
+                maximizeIcon.setContent(
+                        "M2 2 H14 V14 H2 Z"
                 );
-
             }
+        }
+);
 
-        });
+// =====================================================
+// FECHAR
+// =====================================================
+
+closeButton.setOnAction(event -> {
+
+    primaryStage.close();
+
+});
+
+// =====================================================
+// ACESSIBILIDADE / MODO ESCURO
+// =====================================================
+
+Tooltip accessibilityTooltip =
+        new Tooltip("Ativar modo escuro");
+
+accessibilityButton.setTooltip(
+        accessibilityTooltip
+);
+
+accessibilityButton.setOnAction(event -> {
+
+    boolean darkMode =
+            root.getStyleClass().contains("dark-mode");
+
+    if (darkMode) {
+
+        root.getStyleClass().remove("dark-mode");
+
+        accessibilityTooltip.setText(
+                "Ativar modo escuro"
+        );
+
+    } else {
+
+        root.getStyleClass().add("dark-mode");
+
+        accessibilityTooltip.setText(
+                "Ativar modo claro"
+        );
+    }
+
+});
 
         // =====================================================
         // MOSTRAR
