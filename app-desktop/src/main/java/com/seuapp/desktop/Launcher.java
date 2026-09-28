@@ -73,7 +73,7 @@ public class Launcher extends Application {
                 // ÍCONE
                 // =====================================================
 
-                InputStream iconStream = getClass().getResourceAsStream("/icons/y96.jfif");
+                InputStream iconStream = getClass().getResourceAsStream("/icons/y96y.png");
 
                 Image appIcon = null;
 
