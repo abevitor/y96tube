@@ -28,60 +28,49 @@
                     left="14"/>
         </padding>
 
-
-        <!-- ICONE -->
+        <!-- ÍCONE -->
 
         <ImageView fx:id="appIconView"
                    fitWidth="20"
                    fitHeight="20"
                    preserveRatio="true"/>
 
-
         <!-- NOME -->
 
         <Label text="Y96TUBE"
                styleClass="window-title"/>
 
-
-        <!-- ESPACO -->
+        <!-- ESPAÇO -->
 
         <Region HBox.hgrow="ALWAYS"/>
-
 
         <!-- ACESSIBILIDADE -->
 
         <Button fx:id="accessibilityButton"
-                text="☾"
                 accessibleText="Alternar modo escuro"
                 styleClass="window-control, accessibility-button"
                 prefWidth="42"
                 prefHeight="42"/>
 
-
         <!-- MINIMIZAR -->
 
         <Button fx:id="minimizeButton"
-                text="—"
                 accessibleText="Minimizar"
                 styleClass="window-control"
                 prefWidth="46"
                 prefHeight="42"/>
 
-
         <!-- MAXIMIZAR -->
 
         <Button fx:id="maximizeButton"
-                text="□"
                 accessibleText="Maximizar"
                 styleClass="window-control"
                 prefWidth="46"
                 prefHeight="42"/>
 
-
         <!-- FECHAR -->
 
         <Button fx:id="closeButton"
-                text="✕"
                 accessibleText="Fechar"
                 styleClass="window-control, close-button"
                 prefWidth="46"
@@ -91,7 +80,7 @@
 
 
     <!-- =====================================================
-         CONTEUDO
+         CONTEÚDO DO APLICATIVO
          ===================================================== -->
 
     <VBox spacing="16"
@@ -105,13 +94,17 @@
         </padding>
 
 
-        <!-- TITULO -->
+        <!-- =================================================
+             TÍTULO
+             ================================================= -->
 
         <Label text="YouTube Converter"
                styleClass="title-label"/>
 
 
-        <!-- URL -->
+        <!-- =================================================
+             URL
+             ================================================= -->
 
         <HBox spacing="8">
 
@@ -126,7 +119,53 @@
         </HBox>
 
 
-        <!-- TIPO -->
+        <!-- =================================================
+             PREVIEW DO VÍDEO
+             ================================================= -->
+
+        <VBox fx:id="videoPreviewBox"
+              styleClass="video-preview"
+              spacing="10"
+              managed="false"
+              visible="false">
+
+            <HBox spacing="14"
+                  alignment="CENTER_LEFT">
+
+                <!-- THUMBNAIL -->
+
+                <StackPane styleClass="thumbnail-container">
+
+                    <ImageView fx:id="thumbnailImage"
+                               fitWidth="150"
+                               fitHeight="85"
+                               preserveRatio="true"/>
+
+                </StackPane>
+
+
+                <!-- INFORMAÇÕES DO VÍDEO -->
+
+                <VBox spacing="5"
+                      HBox.hgrow="ALWAYS">
+
+                    <Label fx:id="videoTitleLabel"
+                           styleClass="video-title"
+                           wrapText="true"/>
+
+                    <Label fx:id="videoChannelLabel"
+                           styleClass="video-channel"/>
+
+                </VBox>
+
+            </HBox>
+
+        </VBox>
+
+
+        <!-- =================================================
+             TIPO DE SAÍDA
+             ================================================= -->
 
         <HBox spacing="18"
               styleClass="output-selector">
@@ -150,7 +189,9 @@
         </HBox>
 
 
-        <!-- FORMATO -->
+        <!-- =================================================
+             FORMATO
+             ================================================= -->
 
         <Label text="Qualidade / formato"
                styleClass="field-label"/>
@@ -160,7 +201,9 @@
                   maxWidth="Infinity"/>
 
 
-        <!-- ACOES -->
+        <!-- =================================================
+             AÇÕES
+             ================================================= -->
 
         <HBox spacing="8"
               styleClass="action-buttons">
@@ -178,14 +221,18 @@
         </HBox>
 
 
-        <!-- PROGRESSO -->
+        <!-- =================================================
+             PROGRESSO
+             ================================================= -->
 
         <ProgressBar fx:id="progressBar"
                      progress="0"
                      maxWidth="Infinity"/>
 
 
-        <!-- STATUS -->
+        <!-- =================================================
+             STATUS
+             ================================================= -->
 
         <Label fx:id="statusLabel"
                text="Pronto."
