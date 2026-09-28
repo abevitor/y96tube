@@ -97,33 +97,37 @@
    ========================================================= */
 
 .svg-icon {
-    -fx-fill: #596663;
+    -fx-fill: transparent;
 
-    -fx-scale-x: 0.85;
-    -fx-scale-y: 0.85;
+    -fx-stroke: #596663;
+
+    -fx-stroke-width: 1.5;
+
+    -fx-stroke-line-cap: square;
+
+    -fx-stroke-line-join: miter;
 }
 
 
+/* Hover dos icones */
+
 .window-control:hover .svg-icon {
-    -fx-fill: #202826;
+    -fx-stroke: #202826;
 }
 
 
 /* =========================================================
-   BOTAO ACESSIBILIDADE
+   ICONE LUA
    ========================================================= */
 
-.accessibility-button {
-    -fx-background-color: transparent;
+.moon-icon {
+    -fx-fill: #596663;
+
+    -fx-stroke: transparent;
 }
 
 
-.accessibility-button:hover {
-    -fx-background-color: #CDD9D6;
-}
-
-
-.accessibility-button:hover .svg-icon {
+.accessibility-button:hover .moon-icon {
     -fx-fill: #2D8E83;
 }
 
@@ -132,23 +136,83 @@
    BOTAO FECHAR
    ========================================================= */
 
-.close-button:hover {
+#closeButton {
+    -fx-background-color: transparent;
+}
+
+
+#closeButton:hover {
     -fx-background-color: #D95353;
 }
 
 
-.close-button:hover .svg-icon {
-    -fx-fill: #FFFFFF;
+#closeButton:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+    -fx-fill: transparent;
 }
 
 
-.close-button:pressed {
+#closeButton:pressed {
     -fx-background-color: #B83B3B;
 }
 
 
-.close-button:pressed .svg-icon {
-    -fx-fill: #FFFFFF;
+#closeButton:pressed .svg-icon {
+    -fx-stroke: #FFFFFF;
+}
+
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+.dark-mode .svg-icon {
+    -fx-stroke: #A5B2AF;
+}
+
+
+.dark-mode .moon-icon {
+    -fx-fill: #A5B2AF;
+    -fx-stroke: transparent;
+}
+
+
+.dark-mode .window-control:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+}
+
+
+.dark-mode .accessibility-button:hover .moon-icon {
+    -fx-fill: #77DCCE;
+}
+
+
+/* =========================================================
+   DARK MODE - FECHAR
+   ========================================================= */
+
+.dark-mode #closeButton {
+    -fx-background-color: transparent;
+}
+
+
+.dark-mode #closeButton:hover {
+    -fx-background-color: #C94E4E;
+}
+
+
+.dark-mode #closeButton:hover .svg-icon {
+    -fx-stroke: #FFFFFF;
+}
+
+
+.dark-mode #closeButton:pressed {
+    -fx-background-color: #A43838;
+}
+
+
+.dark-mode #closeButton:pressed .svg-icon {
+    -fx-stroke: #FFFFFF;
 }
 
 
@@ -360,9 +424,9 @@
 #cancelButton {
     -fx-background-color: transparent;
 
-    -fx-border-color: #D0B5B5;
+    -fx-border-color: #722024;
 
-    -fx-text-fill: #8B6464;
+    -fx-text-fill: #991d1d;
 }
 
 
@@ -815,18 +879,18 @@
 .dark-mode #cancelButton {
     -fx-background-color: transparent;
 
-    -fx-border-color: #684848;
+    -fx-border-color: #d81a1a;
 
-    -fx-text-fill: #D18C8C;
+    -fx-text-fill: #991d1d;
 }
 
 
 .dark-mode #cancelButton:hover {
-    -fx-background-color: #382526;
+    -fx-background-color: #722024;
 
-    -fx-border-color: #C75B5B;
+    -fx-border-color: #d81a1a;
 
-    -fx-text-fill: #F09292;
+    -fx-text-fill: #991d1d;
 }
 
 

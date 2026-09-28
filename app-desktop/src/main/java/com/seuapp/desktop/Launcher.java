@@ -210,7 +210,7 @@ public class Launcher extends Application {
 
         });
 
-        // =====================================================
+// =====================================================
 // ICONE MINIMIZAR
 // =====================================================
 
@@ -220,6 +220,7 @@ SVGPath minimizeIcon = criarIcone(
 
 minimizeButton.setText("");
 minimizeButton.setGraphic(minimizeIcon);
+
 
 // =====================================================
 // ICONE MAXIMIZAR
@@ -232,6 +233,7 @@ SVGPath maximizeIcon = criarIcone(
 maximizeButton.setText("");
 maximizeButton.setGraphic(maximizeIcon);
 
+
 // =====================================================
 // ICONE FECHAR
 // =====================================================
@@ -243,17 +245,24 @@ SVGPath closeIcon = criarIcone(
 closeButton.setText("");
 closeButton.setGraphic(closeIcon);
 
+// Garante a classe do botão de fechar
+if (!closeButton.getStyleClass().contains("close-button")) {
+    closeButton.getStyleClass().add("close-button");
+}
+
+
 // =====================================================
 // ICONE ACESSIBILIDADE
 // =====================================================
 
 SVGPath darkModeIcon = criarIcone(
-        "M14 8 A6 6 0 1 1 8 2 A5 5 0 0 0 14 8 Z"
+        "M14 8.5 A6.5 6.5 0 1 1 8 2 A5.2 5.2 0 0 0 14 8.5 Z"
 );
+
+darkModeIcon.getStyleClass().add("moon-icon");
 
 accessibilityButton.setText("");
 accessibilityButton.setGraphic(darkModeIcon);
-
 // =====================================================
 // MINIMIZAR
 // =====================================================
