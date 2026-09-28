@@ -25,39 +25,65 @@
             <Insets top="0"
                     right="0"
                     bottom="0"
-                    left="12"/>
+                    left="14"/>
         </padding>
 
-        <!-- ÍCONE -->
+
+        <!-- ICONE -->
+
         <ImageView fx:id="appIconView"
                    fitWidth="20"
                    fitHeight="20"
                    preserveRatio="true"/>
 
+
         <!-- NOME -->
+
         <Label text="Y96TUBE"
                styleClass="window-title"/>
 
+
+        <!-- ESPACO -->
+
         <Region HBox.hgrow="ALWAYS"/>
 
+
+        <!-- ACESSIBILIDADE -->
+
+        <Button fx:id="accessibilityButton"
+                text="☾"
+                accessibleText="Alternar modo escuro"
+                styleClass="window-control, accessibility-button"
+                prefWidth="42"
+                prefHeight="42"/>
+
+
         <!-- MINIMIZAR -->
+
         <Button fx:id="minimizeButton"
                 text="—"
+                accessibleText="Minimizar"
                 styleClass="window-control"
                 prefWidth="46"
                 prefHeight="42"/>
+
 
         <!-- MAXIMIZAR -->
+
         <Button fx:id="maximizeButton"
                 text="□"
+                accessibleText="Maximizar"
                 styleClass="window-control"
                 prefWidth="46"
                 prefHeight="42"/>
 
+
         <!-- FECHAR -->
+
         <Button fx:id="closeButton"
                 text="✕"
-                styleClass="window-control" 
+                accessibleText="Fechar"
+                styleClass="window-control, close-button"
                 prefWidth="46"
                 prefHeight="42"/>
 
@@ -65,24 +91,28 @@
 
 
     <!-- =====================================================
-         CONTEÚDO DO APLICATIVO
+         CONTEUDO
          ===================================================== -->
 
-    <VBox spacing="14"
+    <VBox spacing="16"
           styleClass="content-area">
 
         <padding>
-            <Insets top="20"
-                    right="20"
-                    bottom="20"
-                    left="20"/>
+            <Insets top="22"
+                    right="24"
+                    bottom="24"
+                    left="24"/>
         </padding>
+
+
+        <!-- TITULO -->
 
         <Label text="YouTube Converter"
                styleClass="title-label"/>
 
 
         <!-- URL -->
+
         <HBox spacing="8">
 
             <TextField fx:id="urlField"
@@ -96,16 +126,22 @@
         </HBox>
 
 
-        <!-- TIPO DE SAÍDA -->
-        <HBox spacing="16">
+        <!-- TIPO -->
+
+        <HBox spacing="18"
+              styleClass="output-selector">
 
             <fx:define>
+
                 <ToggleGroup fx:id="outputTypeGroup"/>
+
             </fx:define>
+
 
             <RadioButton fx:id="mp3Radio"
                          text="MP3 (áudio)"
                          toggleGroup="$outputTypeGroup"/>
+
 
             <RadioButton fx:id="mp4Radio"
                          text="MP4 (vídeo)"
@@ -115,19 +151,24 @@
 
 
         <!-- FORMATO -->
-        <Label text="Qualidade / formato (apenas para MP4):"/>
+
+        <Label text="Qualidade / formato"
+               styleClass="field-label"/>
 
 
         <ComboBox fx:id="formatComboBox"
                   maxWidth="Infinity"/>
 
 
-        <!-- BOTÕES -->
-        <HBox spacing="8">
+        <!-- ACOES -->
+
+        <HBox spacing="8"
+              styleClass="action-buttons">
 
             <Button fx:id="downloadButton"
                     text="Baixar"
                     onAction="#onDownload"/>
+
 
             <Button fx:id="cancelButton"
                     text="Cancelar"
@@ -138,12 +179,14 @@
 
 
         <!-- PROGRESSO -->
+
         <ProgressBar fx:id="progressBar"
                      progress="0"
                      maxWidth="Infinity"/>
 
 
         <!-- STATUS -->
+
         <Label fx:id="statusLabel"
                text="Pronto."
                wrapText="true"/>
