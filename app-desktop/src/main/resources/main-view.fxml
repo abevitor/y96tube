@@ -2,71 +2,152 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
 
-<VBox spacing="14"
-      xmlns="http://javafx.com/javafx"
+<VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.seuapp.desktop.controller.MainController">
+      fx:controller="com.seuapp.desktop.controller.MainController"
+      styleClass="window-root">
 
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+    <!-- =====================================================
+         TITLE BAR
+         ===================================================== -->
 
-    <Label text="YouTube Converter"
-           styleClass="title-label"/>
+    <HBox fx:id="titleBar"
+          styleClass="title-bar"
+          alignment="CENTER_LEFT"
+          prefHeight="42"
+          minHeight="42"
+          maxHeight="42">
 
-    <HBox spacing="8">
-        <TextField fx:id="urlField"
-                   promptText="Cole o link do YouTube aqui"
-                   HBox.hgrow="ALWAYS"/>
+        <padding>
+            <Insets top="0"
+                    right="0"
+                    bottom="0"
+                    left="12"/>
+        </padding>
 
-        <Button fx:id="listFormatsButton"
-                text="Buscar formatos"
-                onAction="#onListFormats"/>
+        <!-- ÍCONE -->
+        <ImageView fx:id="appIconView"
+                   fitWidth="20"
+                   fitHeight="20"
+                   preserveRatio="true"/>
+
+        <!-- NOME -->
+        <Label text="Y96TUBE"
+               styleClass="window-title"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <!-- MINIMIZAR -->
+        <Button fx:id="minimizeButton"
+                text="—"
+                styleClass="window-control"
+                prefWidth="46"
+                prefHeight="42"/>
+
+        <!-- MAXIMIZAR -->
+        <Button fx:id="maximizeButton"
+                text="□"
+                styleClass="window-control"
+                prefWidth="46"
+                prefHeight="42"/>
+
+        <!-- FECHAR -->
+        <Button fx:id="closeButton"
+                text="✕"
+                styleClass="window-control" 
+                prefWidth="46"
+                prefHeight="42"/>
+
     </HBox>
 
-    <HBox spacing="16">
 
-        <fx:define>
-            <ToggleGroup fx:id="outputTypeGroup"/>
-        </fx:define>
+    <!-- =====================================================
+         CONTEÚDO DO APLICATIVO
+         ===================================================== -->
 
-        <RadioButton fx:id="mp3Radio"
-                     text="MP3 (áudio)"
-                     toggleGroup="$outputTypeGroup"/>
+    <VBox spacing="14"
+          styleClass="content-area">
 
-        <RadioButton fx:id="mp4Radio"
-                     text="MP4 (vídeo)"
-                     toggleGroup="$outputTypeGroup"/>
+        <padding>
+            <Insets top="20"
+                    right="20"
+                    bottom="20"
+                    left="20"/>
+        </padding>
 
-    </HBox>
+        <Label text="YouTube Converter"
+               styleClass="title-label"/>
 
-    <Label text="Qualidade / formato (apenas para MP4):"/>
 
-    <ComboBox fx:id="formatComboBox"
-              maxWidth="Infinity"/>
+        <!-- URL -->
+        <HBox spacing="8">
 
-    <HBox spacing="8">
+            <TextField fx:id="urlField"
+                       promptText="Cole o link do YouTube aqui"
+                       HBox.hgrow="ALWAYS"/>
 
-        <Button fx:id="downloadButton"
-                text="Baixar"
-                onAction="#onDownload"/>
+            <Button fx:id="listFormatsButton"
+                    text="Buscar formatos"
+                    onAction="#onListFormats"/>
 
-        <Button fx:id="cancelButton"
-                text="Cancelar"
-                onAction="#onCancelarDownload"
-                disable="true"/>
+        </HBox>
 
-    </HBox>
 
-    <ProgressBar fx:id="progressBar"
-                 progress="0"
-                 maxWidth="Infinity"/>
+        <!-- TIPO DE SAÍDA -->
+        <HBox spacing="16">
 
-    <Label fx:id="statusLabel"
-           text="Pronto."
-           wrapText="true"/>
+            <fx:define>
+                <ToggleGroup fx:id="outputTypeGroup"/>
+            </fx:define>
+
+            <RadioButton fx:id="mp3Radio"
+                         text="MP3 (áudio)"
+                         toggleGroup="$outputTypeGroup"/>
+
+            <RadioButton fx:id="mp4Radio"
+                         text="MP4 (vídeo)"
+                         toggleGroup="$outputTypeGroup"/>
+
+        </HBox>
+
+
+        <!-- FORMATO -->
+        <Label text="Qualidade / formato (apenas para MP4):"/>
+
+
+        <ComboBox fx:id="formatComboBox"
+                  maxWidth="Infinity"/>
+
+
+        <!-- BOTÕES -->
+        <HBox spacing="8">
+
+            <Button fx:id="downloadButton"
+                    text="Baixar"
+                    onAction="#onDownload"/>
+
+            <Button fx:id="cancelButton"
+                    text="Cancelar"
+                    onAction="#onCancelarDownload"
+                    disable="true"/>
+
+        </HBox>
+
+
+        <!-- PROGRESSO -->
+        <ProgressBar fx:id="progressBar"
+                     progress="0"
+                     maxWidth="Infinity"/>
+
+
+        <!-- STATUS -->
+        <Label fx:id="statusLabel"
+               text="Pronto."
+               wrapText="true"/>
+
+    </VBox>
 
 </VBox>

@@ -1,29 +1,131 @@
 /* =========================================================
    Y96TUBE
-   CLEAN INDUSTRIAL / BLAME! INSPIRED
+   CLEAN INDUSTRIAL UI
+   BLAME! INSPIRED
    ========================================================= */
 
 
 /* =========================================================
-   ROOT
+   JANELA
    ========================================================= */
 
-.root {
-    -fx-background-color: #E7EBEA;
-    -fx-font-family: "Consolas", "Cascadia Mono", "Courier New", monospace;
+.window-root {
+    -fx-background-color: #E8ECEB;
+
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+
+    -fx-border-color: #BBC4C1;
+    -fx-border-width: 1;
 }
 
 
 /* =========================================================
-   TITULO
+   TITLE BAR
+   ========================================================= */
+
+.title-bar {
+    -fx-background-color: #D7DDDA;
+
+    -fx-border-color: #B8C1BE;
+
+    -fx-border-width: 0 0 1 0;
+}
+
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.title-bar .image-view {
+    -fx-opacity: 0.85;
+}
+
+
+/* =========================================================
+   TITULO DA JANELA
+   ========================================================= */
+
+.window-title {
+    -fx-text-fill: #34403D;
+
+    -fx-font-family: "Consolas",
+                    "Cascadia Mono",
+                    "Courier New",
+                    monospace;
+
+    -fx-font-size: 12px;
+
+    -fx-font-weight: bold;
+
+    -fx-padding: 0 0 0 8;
+}
+
+
+/* =========================================================
+   CONTROLES DA JANELA
+   ========================================================= */
+
+.window-control {
+    -fx-background-color: transparent;
+
+    -fx-background-radius: 0;
+
+    -fx-border-width: 0;
+
+    -fx-text-fill: #53605D;
+
+    -fx-font-family: "Segoe UI Symbol",
+                    "Segoe UI",
+                    sans-serif;
+
+    -fx-font-size: 15px;
+
+    -fx-padding: 0;
+
+    -fx-cursor: hand;
+}
+
+
+/* hover */
+
+.window-control:hover {
+    -fx-background-color: #C7CFCC;
+
+    -fx-text-fill: #24302D;
+}
+
+
+/* fechar */
+
+.window-control:last-child:hover {
+    -fx-background-color: #C85C5C;
+
+    -fx-text-fill: white;
+}
+
+
+/* =========================================================
+   CONTEUDO
+   ========================================================= */
+
+.content-area {
+    -fx-background-color: #E8ECEB;
+}
+
+
+/* =========================================================
+   TITULO PRINCIPAL
    ========================================================= */
 
 .title-label {
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #202827;
+    -fx-font-size: 23px;
 
-    -fx-padding: 0 0 10 0;
+    -fx-font-weight: bold;
+
+    -fx-text-fill: #26302E;
+
+    -fx-padding: 0 0 8 0;
 }
 
 
@@ -32,7 +134,8 @@
    ========================================================= */
 
 .label {
-    -fx-text-fill: #5D6866;
+    -fx-text-fill: #596663;
+
     -fx-font-size: 12px;
 }
 
@@ -43,9 +146,10 @@
 
 #statusLabel {
     -fx-text-fill: #687572;
+
     -fx-font-size: 11px;
 
-    -fx-padding: 8 0 0 0;
+    -fx-padding: 6 0 0 0;
 }
 
 
@@ -54,16 +158,18 @@
    ========================================================= */
 
 .text-field {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F7F9F8;
 
-    -fx-text-fill: #202827;
+    -fx-text-fill: #26302E;
 
-    -fx-prompt-text-fill: #98A4A1;
+    -fx-prompt-text-fill: #98A39F;
 
     -fx-background-radius: 2;
+
     -fx-border-radius: 2;
 
-    -fx-border-color: #B7C0BE;
+    -fx-border-color: #B6C0BD;
+
     -fx-border-width: 1;
 
     -fx-padding: 10 12;
@@ -73,38 +179,40 @@
 
 
 .text-field:hover {
-    -fx-border-color: #8E9B98;
+    -fx-border-color: #96A39F;
 }
 
 
 .text-field:focused {
     -fx-background-color: #FFFFFF;
 
-    -fx-border-color: #48B8AA;
+    -fx-border-color: #4CB8AA;
 
     -fx-border-width: 1.5;
 
-    -fx-text-fill: #18201F;
+    -fx-text-fill: #1E2825;
 }
 
 
 /* =========================================================
-   BOTOES
+   BOTÕES
    ========================================================= */
 
 .button {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F5F7F6;
 
-    -fx-text-fill: #394341;
+    -fx-text-fill: #3D4946;
 
     -fx-font-size: 12px;
 
     -fx-padding: 9 16;
 
     -fx-background-radius: 2;
+
     -fx-border-radius: 2;
 
-    -fx-border-color: #B3BDBA;
+    -fx-border-color: #B5BFBC;
+
     -fx-border-width: 1;
 
     -fx-cursor: hand;
@@ -112,18 +220,18 @@
 
 
 .button:hover {
-    -fx-background-color: #E9EEEC;
+    -fx-background-color: #E7ECEA;
 
-    -fx-text-fill: #202827;
+    -fx-border-color: #4CB8AA;
 
-    -fx-border-color: #48B8AA;
+    -fx-text-fill: #26302E;
 }
 
 
 .button:pressed {
-    -fx-background-color: #DDE5E2;
+    -fx-background-color: #D8E2DF;
 
-    -fx-border-color: #31998D;
+    -fx-border-color: #329B90;
 }
 
 
@@ -133,59 +241,53 @@
 
 
 /* =========================================================
-   BOTAO DOWNLOAD
+   DOWNLOAD
    ========================================================= */
 
 #downloadButton {
-    -fx-background-color: #48B8AA;
+    -fx-background-color: #4CB8AA;
 
-    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #4CB8AA;
+
+    -fx-text-fill: white;
 
     -fx-font-weight: bold;
-
-    -fx-border-color: #48B8AA;
-
-    -fx-border-width: 1;
 
     -fx-padding: 10 22;
 }
 
 
 #downloadButton:hover {
-    -fx-background-color: #5FC8BB;
+    -fx-background-color: #5BC5B7;
 
-    -fx-border-color: #5FC8BB;
-
-    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #5BC5B7;
 }
 
 
 #downloadButton:pressed {
-    -fx-background-color: #369B90;
+    -fx-background-color: #379B90;
 }
 
 
 /* =========================================================
-   BOTAO CANCELAR
+   CANCELAR
    ========================================================= */
 
 #cancelButton {
     -fx-background-color: transparent;
 
-    -fx-text-fill: #8B5D5D;
+    -fx-border-color: #C5AAAA;
 
-    -fx-border-color: #C8AAAA;
-
-    -fx-border-width: 1;
+    -fx-text-fill: #8C6262;
 }
 
 
 #cancelButton:hover {
-    -fx-background-color: #F4EAEA;
+    -fx-background-color: #F5EAEA;
 
-    -fx-text-fill: #A54848;
+    -fx-border-color: #B75A5A;
 
-    -fx-border-color: #A54848;
+    -fx-text-fill: #A64444;
 }
 
 
@@ -194,14 +296,14 @@
    ========================================================= */
 
 .radio-button {
-    -fx-text-fill: #4E5A57;
+    -fx-text-fill: #4F5C58;
 
     -fx-font-size: 12px;
 }
 
 
 .radio-button:hover {
-    -fx-text-fill: #202827;
+    -fx-text-fill: #26302E;
 }
 
 
@@ -210,26 +312,27 @@
    ========================================================= */
 
 .radio-button .radio {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F7F9F8;
 
-    -fx-border-color: #AEB9B6;
+    -fx-border-color: #AEB9B5;
 
     -fx-border-width: 1;
 
     -fx-background-radius: 2;
+
     -fx-border-radius: 2;
 }
 
 
 .radio-button:selected .radio {
-    -fx-background-color: #EAF7F5;
+    -fx-background-color: #E9F7F4;
 
-    -fx-border-color: #48B8AA;
+    -fx-border-color: #4CB8AA;
 }
 
 
 .radio-button:selected .dot {
-    -fx-background-color: #48B8AA;
+    -fx-background-color: #4CB8AA;
 
     -fx-background-radius: 1;
 }
@@ -240,37 +343,34 @@
    ========================================================= */
 
 .combo-box {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F7F9F8;
 
-    -fx-border-color: #B7C0BE;
+    -fx-border-color: #B6C0BD;
 
     -fx-border-width: 1;
 
     -fx-background-radius: 2;
+
     -fx-border-radius: 2;
 
-    -fx-mark-color: #60706C;
+    -fx-mark-color: #65736F;
 }
 
 
 .combo-box:hover {
-    -fx-border-color: #8E9B98;
+    -fx-border-color: #96A39F;
 }
 
 
 .combo-box:focused {
-    -fx-border-color: #48B8AA;
+    -fx-border-color: #4CB8AA;
 }
 
-
-/* =========================================================
-   COMBO BOX - LIST CELL
-   ========================================================= */
 
 .combo-box .list-cell {
     -fx-background-color: transparent;
 
-    -fx-text-fill: #3F4A47;
+    -fx-text-fill: #3F4B48;
 
     -fx-font-size: 12px;
 
@@ -279,38 +379,38 @@
 
 
 /* =========================================================
-   COMBO BOX - POPUP
+   COMBO BOX POPUP
    ========================================================= */
 
 .combo-box-popup .list-view {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F7F9F8;
 
-    -fx-border-color: #48B8AA;
+    -fx-border-color: #4CB8AA;
 
     -fx-border-width: 1;
 }
 
 
 .combo-box-popup .list-cell {
-    -fx-background-color: #F4F6F5;
+    -fx-background-color: #F7F9F8;
 
-    -fx-text-fill: #4E5A57;
+    -fx-text-fill: #4F5C58;
 
     -fx-padding: 8 10;
 }
 
 
 .combo-box-popup .list-cell:hover {
-    -fx-background-color: #E4EEEB;
+    -fx-background-color: #E2ECE9;
 
-    -fx-text-fill: #202827;
+    -fx-text-fill: #26302E;
 }
 
 
 .combo-box-popup .list-cell:filled:selected {
-    -fx-background-color: #DCEDE9;
+    -fx-background-color: #DCEEEA;
 
-    -fx-text-fill: #258A7F;
+    -fx-text-fill: #258B7F;
 }
 
 
@@ -324,9 +424,9 @@
 
 
 .progress-bar .track {
-    -fx-background-color: #D6DEDC;
+    -fx-background-color: #D4DCDA;
 
-    -fx-border-color: #B7C0BE;
+    -fx-border-color: #B7C0BD;
 
     -fx-border-width: 1;
 
@@ -335,37 +435,11 @@
 
 
 .progress-bar .bar {
-    -fx-background-color: #48B8AA;
+    -fx-background-color: #4CB8AA;
 
     -fx-background-radius: 1;
 
     -fx-background-insets: 0;
-}
-
-
-/* =========================================================
-   SCROLL BAR
-   ========================================================= */
-
-.scroll-bar {
-    -fx-background-color: #E7EBEA;
-}
-
-
-.scroll-bar .track {
-    -fx-background-color: #DCE2E0;
-}
-
-
-.scroll-bar .thumb {
-    -fx-background-color: #AAB6B3;
-
-    -fx-background-radius: 2;
-}
-
-
-.scroll-bar .thumb:hover {
-    -fx-background-color: #7F8D89;
 }
 
 
@@ -378,16 +452,43 @@
 .text-field:focused,
 .radio-button:focused {
     -fx-focus-color: transparent;
+
     -fx-faint-focus-color: transparent;
 }
 
 
 /* =========================================================
-   SEPARADORES
+   SCROLL BAR
+   ========================================================= */
+
+.scroll-bar {
+    -fx-background-color: #E8ECEB;
+}
+
+
+.scroll-bar .track {
+    -fx-background-color: #DDE4E1;
+}
+
+
+.scroll-bar .thumb {
+    -fx-background-color: #AAB6B2;
+
+    -fx-background-radius: 2;
+}
+
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #879692;
+}
+
+
+/* =========================================================
+   SEPARATOR
    ========================================================= */
 
 .separator .line {
-    -fx-border-color: #C6CFCD;
+    -fx-border-color: #C5CFCC;
 
     -fx-border-width: 1 0 0 0;
 }
