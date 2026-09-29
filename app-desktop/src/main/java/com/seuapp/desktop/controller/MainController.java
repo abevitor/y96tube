@@ -25,6 +25,7 @@ import javafx.scene.control.ProgressBar;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -122,6 +123,16 @@ public class MainController {
             );
 
 
+    /*
+     * Identifica qual busca é a mais recente.
+     *
+     * Isso evita que uma consulta antiga termine depois
+     * de uma nova consulta e sobrescreva a interface.
+     */
+    private final AtomicLong idDaBusca =
+            new AtomicLong();
+
+
     // =====================================================
     // DOWNLOAD / CANCELAMENTO
     // =====================================================
@@ -139,55 +150,91 @@ public class MainController {
     @FXML
     public void initialize() {
 
+        // -------------------------------------------------
         // MP3 como padrão
+        // -------------------------------------------------
+
         mp3Radio.setSelected(true);
 
-        // Botão cancelar começa desabilitado
+
+        // -------------------------------------------------
+        // Cancelar começa desabilitado
+        // -------------------------------------------------
+
         cancelButton.setDisable(true);
 
+
+        // -------------------------------------------------
         // Preview começa escondido
+        // -------------------------------------------------
+
         limparPreview();
 
 
-        // =================================================
-        // TROCA MP3 / MP4
-        // =================================================
+        // -------------------------------------------------
+        // Combo começa vazio
+        // -------------------------------------------------
+
+        formatComboBox
+                .getItems()
+                .clear();
+
+
+        // -------------------------------------------------
+        // Botão de download começa desabilitado
+        // -------------------------------------------------
+
+        downloadButton.setDisable(true);
+
+
+        // -------------------------------------------------
+        // Troca MP3 / MP4
+        // -------------------------------------------------
 
         outputTypeGroup
                 .selectedToggleProperty()
                 .addListener(
-                        (obs, oldVal, newVal) -> {
-
-                            atualizarComboFiltrado();
-
-                        }
+                        (obs, oldVal, newVal) ->
+                                atualizarComboFiltrado()
                 );
 
 
-        // =================================================
-        // BUSCA AUTOMÁTICA
-        // =================================================
+        // -------------------------------------------------
+        // Busca automática
+        // -------------------------------------------------
 
         buscaAutomatica.setOnFinished(
                 e -> buscarVideo()
         );
 
 
-        // =================================================
-        // LISTENER DO CAMPO URL
-        // =================================================
+        // -------------------------------------------------
+        // Listener do campo URL
+        // -------------------------------------------------
 
         urlField.textProperty()
                 .addListener(
                         (obs, oldText, newText) -> {
 
-                            // Cancela o timer anterior
+                            /*
+                             * Invalida qualquer consulta anterior.
+                             */
+                            idDaBusca.incrementAndGet();
+
+
+                            /*
+                             * Cancela o timer anterior.
+                             */
                             buscaAutomatica.stop();
+
 
                             String url =
                                     newText.trim();
 
-                            // Campo vazio
+
+                            /*
+                             * Campo vazio.
+                             */
                             if (url.isEmpty()) {
 
                                 limparPreview();
@@ -199,6 +246,9 @@ public class MainController {
                                         .getItems()
                                         .clear();
 
+                                downloadButton
+                                        .setDisable(true);
+
                                 statusLabel.setText(
                                         "Pronto."
                                 );
@@ -207,8 +257,27 @@ public class MainController {
                             }
 
 
-                            // Só agenda a busca se parecer
-                            // um link válido do YouTube
+                            /*
+                             * Enquanto o usuário está alterando
+                             * o link, limpamos a seleção anterior.
+                             */
+                            todosFormatos =
+                                    List.of();
+
+                            formatComboBox
+                                    .getItems()
+                                    .clear();
+
+                            limparPreview();
+
+                            downloadButton
+                                    .setDisable(true);
+
+
+                            /*
+                             * Só agenda a busca se o texto
+                             * parecer um link válido.
+                             */
                             if (YOUTUBE_URL_PATTERN
                                     .matcher(url)
                                     .matches()) {
@@ -219,17 +288,73 @@ public class MainController {
 
                                 buscaAutomatica
                                         .playFromStart();
-                            }
 
+                            } else {
+
+                                statusLabel.setText(
+                                        "Cole um link válido do YouTube."
+                                );
+                            }
                         }
                 );
 
 
-        // =================================================
-        // VERIFICAR BINÁRIOS
-        // =================================================
+        // -------------------------------------------------
+        // Verificar binários
+        // -------------------------------------------------
 
         verificarBinarios();
+    }
+
+
+    // =====================================================
+    // ENCERRAR APLICAÇÃO
+    // =====================================================
+
+    /*
+     * Chamado pelo Launcher antes de fechar a janela.
+     *
+     * Garante que nenhum processo externo fique executando
+     * depois que o Y96TUBE for encerrado.
+     */
+    public void encerrarAplicacao() {
+
+        /*
+         * Para a busca automática agendada.
+         */
+        buscaAutomatica.stop();
+
+
+        /*
+         * Invalida uma busca pendente.
+         */
+        idDaBusca.incrementAndGet();
+
+
+        /*
+         * Marca cancelamento.
+         */
+        cancelamentoSolicitado = true;
+
+
+        /*
+         * Captura o processo atual.
+         */
+        Process processo =
+                processoDownloadAtual;
+
+
+        /*
+         * Se houver download ativo, encerra toda a
+         * árvore de processos.
+         */
+        if (processo != null
+                && processo.isAlive()) {
+
+            ytDlpService.cancelarDownload(
+                    processo
+            );
+        }
     }
 
 
@@ -264,14 +389,18 @@ public class MainController {
                                 "yt-dlp ou ffmpeg não encontrados."
                         );
 
+
                         listFormatsButton
                                 .setDisable(true);
+
 
                         downloadButton
                                 .setDisable(true);
 
+
                         urlField
                                 .setDisable(true);
+
 
                     } else {
 
@@ -279,7 +408,6 @@ public class MainController {
                                 "Pronto."
                         );
                     }
-
                 }
         );
 
@@ -300,6 +428,7 @@ public class MainController {
                         task,
                         "check-binaries"
                 );
+
 
         thread.setDaemon(true);
 
@@ -334,15 +463,18 @@ public class MainController {
         }
 
 
-        // =================================================
-        // VALIDAR URL
-        // =================================================
+        // -------------------------------------------------
+        // Validar URL
+        // -------------------------------------------------
 
         if (!YOUTUBE_URL_PATTERN
                 .matcher(url)
                 .matches()) {
 
             limparPreview();
+
+            downloadButton
+                    .setDisable(true);
 
             statusLabel.setText(
                     "Isso não parece um link válido do YouTube."
@@ -352,9 +484,17 @@ public class MainController {
         }
 
 
-        // =================================================
-        // STATUS
-        // =================================================
+        // -------------------------------------------------
+        // ID desta busca
+        // -------------------------------------------------
+
+        final long buscaAtual =
+                idDaBusca.incrementAndGet();
+
+
+        // -------------------------------------------------
+        // Status
+        // -------------------------------------------------
 
         statusLabel.setText(
                 "Consultando vídeo..."
@@ -364,16 +504,16 @@ public class MainController {
         limparPreview();
 
 
-        // =================================================
-        // TRAVAR INTERFACE
-        // =================================================
+        // -------------------------------------------------
+        // Travar interface
+        // -------------------------------------------------
 
         travarInterface(true);
 
 
-        // =================================================
-        // TASK
-        // =================================================
+        // -------------------------------------------------
+        // Task
+        // -------------------------------------------------
 
         Task<VideoDetails> task =
                 new Task<>() {
@@ -382,26 +522,29 @@ public class MainController {
                     protected VideoDetails call()
                             throws Exception {
 
-                        /*
-                         * Uma única chamada ao yt-dlp:
-                         *
-                         * - título
-                         * - canal
-                         * - thumbnail
-                         * - formatos
-                         */
                         return ytDlpService
                                 .getVideoDetails(url);
                     }
                 };
 
 
-        // =================================================
-        // SUCESSO
-        // =================================================
+        // -------------------------------------------------
+        // Sucesso
+        // -------------------------------------------------
 
         task.setOnSucceeded(
                 e -> {
+
+                    /*
+                     * Se uma busca mais nova já existe,
+                     * ignoramos o resultado desta.
+                     */
+                    if (buscaAtual
+                            != idDaBusca.get()) {
+
+                        return;
+                    }
+
 
                     VideoDetails details =
                             task.getValue();
@@ -434,6 +577,15 @@ public class MainController {
                     travarInterface(false);
 
 
+                    /*
+                     * Download só pode ser usado quando
+                     * existe pelo menos um formato.
+                     */
+                    downloadButton.setDisable(
+                            todosFormatos.isEmpty()
+                    );
+
+
                     // -------------------------------------
                     // STATUS
                     // -------------------------------------
@@ -452,19 +604,42 @@ public class MainController {
                                         + " formatos encontrados."
                         );
                     }
-
                 }
         );
 
 
-        // =================================================
-        // ERRO
-        // =================================================
+        // -------------------------------------------------
+        // Erro
+        // -------------------------------------------------
 
         task.setOnFailed(
                 e -> {
 
+                    /*
+                     * Não mostra o erro de uma busca antiga.
+                     */
+                    if (buscaAtual
+                            != idDaBusca.get()) {
+
+                        return;
+                    }
+
+
                     limparPreview();
+
+
+                    todosFormatos =
+                            List.of();
+
+
+                    formatComboBox
+                            .getItems()
+                            .clear();
+
+
+                    downloadButton
+                            .setDisable(true);
+
 
                     statusLabel.setText(
                             mapearErro(
@@ -472,21 +647,22 @@ public class MainController {
                             )
                     );
 
-                    travarInterface(false);
 
+                    travarInterface(false);
                 }
         );
 
 
-        // =================================================
-        // THREAD
-        // =================================================
+        // -------------------------------------------------
+        // Thread
+        // -------------------------------------------------
 
         Thread thread =
                 new Thread(
                         task,
                         "video-info"
                 );
+
 
         thread.setDaemon(true);
 
@@ -501,27 +677,27 @@ public class MainController {
     private void mostrarVideo(
             VideoDetails details) {
 
-        // =================================================
-        // TÍTULO
-        // =================================================
+        // -------------------------------------------------
+        // Título
+        // -------------------------------------------------
 
         videoTitleLabel.setText(
                 details.title()
         );
 
 
-        // =================================================
-        // CANAL
-        // =================================================
+        // -------------------------------------------------
+        // Canal
+        // -------------------------------------------------
 
         videoChannelLabel.setText(
                 details.uploader()
         );
 
 
-        // =================================================
-        // THUMBNAIL
-        // =================================================
+        // -------------------------------------------------
+        // Thumbnail
+        // -------------------------------------------------
 
         String thumbnailUrl =
                 details.thumbnailUrl();
@@ -536,14 +712,6 @@ public class MainController {
 
         } else {
 
-            /*
-             * width  = 150
-             * height = 85
-             *
-             * preserveRatio = true
-             * smooth         = true
-             * background     = true
-             */
             Image image =
                     new Image(
                             thumbnailUrl,
@@ -560,10 +728,6 @@ public class MainController {
             );
 
 
-            /*
-             * Caso a thumbnail falhe ao carregar,
-             * simplesmente remove a imagem.
-             */
             image.errorProperty()
                     .addListener(
                             (obs,
@@ -575,22 +739,28 @@ public class MainController {
                                     Platform.runLater(
                                             () ->
                                                     thumbnailImage
-                                                            .setImage(null)
+                                                            .setImage(
+                                                                    null
+                                                            )
                                     );
                                 }
-
                             }
                     );
         }
 
 
-        // =================================================
-        // MOSTRAR PREVIEW
-        // =================================================
+        // -------------------------------------------------
+        // Mostrar preview
+        // -------------------------------------------------
 
-        videoPreviewBox.setManaged(true);
+        videoPreviewBox.setManaged(
+                true
+        );
 
-        videoPreviewBox.setVisible(true);
+
+        videoPreviewBox.setVisible(
+                true
+        );
     }
 
 
@@ -629,6 +799,7 @@ public class MainController {
             videoPreviewBox.setManaged(
                     false
             );
+
 
             videoPreviewBox.setVisible(
                     false
@@ -674,13 +845,8 @@ public class MainController {
 
             /*
              * MP4:
-             *
-             * somente formatos que:
-             * - possuem vídeo
-             * - são originalmente MP4
-             *
-             * Isso evita mostrar WebM
-             * ao usuário quando ele escolhe MP4.
+             * somente formatos que possuem vídeo
+             * e são originalmente MP4.
              */
             filtrados =
                     todosFormatos.stream()
@@ -700,7 +866,7 @@ public class MainController {
 
 
         // =================================================
-        // ATUALIZAR COMBO
+        // Atualizar Combo
         // =================================================
 
         formatComboBox
@@ -711,7 +877,7 @@ public class MainController {
 
 
         // =================================================
-        // SELECIONAR PRIMEIRO
+        // Selecionar primeiro
         // =================================================
 
         if (!filtrados.isEmpty()) {
@@ -723,13 +889,12 @@ public class MainController {
 
 
         // =================================================
-        // STATUS
+        // Estado do Download
         // =================================================
 
-        /*
-         * Evitamos sobrescrever a mensagem principal
-         * quando o preview acabou de ser carregado.
-         */
+        downloadButton.setDisable(
+                filtrados.isEmpty()
+        );
     }
 
 
@@ -744,21 +909,26 @@ public class MainController {
                 travar
         );
 
+
         listFormatsButton.setDisable(
                 travar
         );
+
 
         downloadButton.setDisable(
                 travar
         );
 
+
         mp3Radio.setDisable(
                 travar
         );
 
+
         mp4Radio.setDisable(
                 travar
         );
+
 
         formatComboBox.setDisable(
                 travar
@@ -778,7 +948,7 @@ public class MainController {
 
 
         // =================================================
-        // VALIDAR URL
+        // Validar URL
         // =================================================
 
         if (url.isEmpty()) {
@@ -804,7 +974,7 @@ public class MainController {
 
 
         // =================================================
-        // TIPO DE SAÍDA
+        // Tipo de saída
         // =================================================
 
         OutputType outputType =
@@ -814,7 +984,7 @@ public class MainController {
 
 
         // =================================================
-        // FORMATO SELECIONADO
+        // Formato selecionado
         // =================================================
 
         VideoFormat selectedFormat =
@@ -823,8 +993,18 @@ public class MainController {
                         .getSelectedItem();
 
 
+        if (selectedFormat == null) {
+
+            statusLabel.setText(
+                    "Nenhum formato disponível para download."
+            );
+
+            return;
+        }
+
+
         // =================================================
-        // ESCOLHER PASTA
+        // Escolher pasta
         // =================================================
 
         DirectoryChooser chooser =
@@ -855,11 +1035,12 @@ public class MainController {
 
 
         // =================================================
-        // PREPARAR DOWNLOAD
+        // Preparar download
         // =================================================
 
         cancelamentoSolicitado =
                 false;
+
 
         processoDownloadAtual =
                 null;
@@ -884,7 +1065,7 @@ public class MainController {
 
 
         // =================================================
-        // TASK
+        // Task
         // =================================================
 
         Task<Integer> task =
@@ -923,7 +1104,6 @@ public class MainController {
                                                                     false
                                                             )
                                     );
-
                                 }
                         );
                     }
@@ -931,7 +1111,7 @@ public class MainController {
 
 
         // =================================================
-        // DOWNLOAD CONCLUÍDO
+        // Download concluído
         // =================================================
 
         task.setOnSucceeded(
@@ -966,7 +1146,7 @@ public class MainController {
 
 
         // =================================================
-        // DOWNLOAD FALHOU
+        // Download falhou
         // =================================================
 
         task.setOnFailed(
@@ -994,7 +1174,7 @@ public class MainController {
 
 
         // =================================================
-        // THREAD
+        // Thread
         // =================================================
 
         Thread thread =
@@ -1002,6 +1182,7 @@ public class MainController {
                         task,
                         "download"
                 );
+
 
         thread.setDaemon(true);
 
@@ -1059,6 +1240,17 @@ public class MainController {
 
         travarInterface(
                 false
+        );
+
+
+        /*
+         * Depois do download, só habilita
+         * novamente se realmente houver formato.
+         */
+        downloadButton.setDisable(
+                formatComboBox
+                        .getItems()
+                        .isEmpty()
         );
     }
 
@@ -1135,9 +1327,26 @@ public class MainController {
         if (lower.contains(
                 "temporary failure")
                 || lower.contains(
-                "name or service not known")) {
+                "name or service not known")
+                || lower.contains(
+                "network is unreachable")
+                || lower.contains(
+                "connection timed out")
+                || lower.contains(
+                "timed out")) {
 
-            return "Sem conexão com a internet.";
+            return "Não foi possível conectar ao YouTube.";
+        }
+
+
+        // =================================================
+        // TIMEOUT
+        // =================================================
+
+        if (lower.contains(
+                "demorou demais")) {
+
+            return "A consulta demorou demais. Verifique sua conexão e tente novamente.";
         }
 
 

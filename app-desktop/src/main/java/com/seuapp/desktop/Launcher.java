@@ -1,5 +1,7 @@
 package com.seuapp.desktop;
 
+import com.seuapp.desktop.controller.MainController;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,327 +12,591 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.SVGPath;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.scene.shape.SVGPath;
 
 import java.io.InputStream;
 
 public class Launcher extends Application {
 
-        private double dragOffsetX;
-        private double dragOffsetY;
+    private double dragOffsetX;
+    private double dragOffsetY;
 
-        private SVGPath criarIcone(String path) {
-                SVGPath icon = new SVGPath();
-                icon.setContent(path);
-                icon.getStyleClass().add("svg-icon");
-                return icon;
+
+    // =====================================================
+    // CRIAR ÍCONE SVG
+    // =====================================================
+
+    private SVGPath criarIcone(String path) {
+
+        SVGPath icon =
+                new SVGPath();
+
+        icon.setContent(path);
+
+        icon.getStyleClass()
+                .add("svg-icon");
+
+        return icon;
+    }
+
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+
+        // =====================================================
+        // FXML
+        // =====================================================
+
+        FXMLLoader loader =
+                new FXMLLoader(
+                        getClass().getResource(
+                                "/main-view.fxml"
+                        )
+                );
+
+        Parent root =
+                loader.load();
+
+
+        // =====================================================
+        // CONTROLLER
+        // =====================================================
+
+        MainController controller =
+                loader.getController();
+
+
+        if (controller == null) {
+
+            throw new IllegalStateException(
+                    "Não foi possível obter o MainController."
+            );
         }
 
-        @Override
-        public void start(Stage primaryStage) throws Exception {
 
-                // =====================================================
-                // FXML
-                // =====================================================
+        // =====================================================
+        // CENA
+        // =====================================================
 
-                FXMLLoader loader = new FXMLLoader(
-                                getClass().getResource("/main-view.fxml"));
+        Scene scene =
+                new Scene(root);
 
-                Parent root = loader.load();
+        scene.setFill(
+                Color.TRANSPARENT
+        );
 
-                // =====================================================
-                // CENA
-                // =====================================================
 
-                Scene scene = new Scene(root);
-                scene.setFill(Color.TRANSPARENT);
+        // Remove a barra padrão do Windows
 
-                // Remove a barra padrão do Windows
-                primaryStage.initStyle(StageStyle.UNDECORATED);
+        primaryStage.initStyle(
+                StageStyle.UNDECORATED
+        );
 
-                primaryStage.setResizable(true);
+        primaryStage.setResizable(
+                true
+        );
 
-                primaryStage.setMinWidth(520);
-                primaryStage.setMinHeight(500);
+        primaryStage.setMinWidth(
+                520
+        );
 
-                // =====================================================
-                // CSS
-                // =====================================================
+        primaryStage.setMinHeight(
+                500
+        );
 
-                var cssUrl = getClass().getResource("/style.css");
 
-                if (cssUrl == null) {
-                        throw new IllegalStateException(
-                                        "Não foi possível encontrar /style.css");
+        // =====================================================
+        // CSS
+        // =====================================================
+
+        var cssUrl =
+                getClass().getResource(
+                        "/style.css"
+                );
+
+
+        if (cssUrl == null) {
+
+            throw new IllegalStateException(
+                    "Não foi possível encontrar /style.css"
+            );
+        }
+
+
+        scene.getStylesheets()
+                .add(
+                        cssUrl.toExternalForm()
+                );
+
+
+        // =====================================================
+        // ÍCONE DA APLICAÇÃO
+        // =====================================================
+
+        InputStream iconStream =
+                getClass().getResourceAsStream(
+                        "/icons/y96y.png"
+                );
+
+
+        Image appIcon =
+                null;
+
+
+        if (iconStream != null) {
+
+            appIcon =
+                    new Image(
+                            iconStream
+                    );
+
+            primaryStage
+                    .getIcons()
+                    .add(
+                            appIcon
+                    );
+
+        } else {
+
+            System.out.println(
+                    "AVISO: /icons/y96y.png não encontrado."
+            );
+        }
+
+
+        primaryStage.setTitle(
+                "Y96TUBE"
+        );
+
+
+        // =====================================================
+        // ELEMENTOS DA TITLE BAR
+        // =====================================================
+
+        HBox titleBar =
+                (HBox) loader
+                        .getNamespace()
+                        .get("titleBar");
+
+
+        Button minimizeButton =
+                (Button) loader
+                        .getNamespace()
+                        .get("minimizeButton");
+
+
+        Button maximizeButton =
+                (Button) loader
+                        .getNamespace()
+                        .get("maximizeButton");
+
+
+        Button closeButton =
+                (Button) loader
+                        .getNamespace()
+                        .get("closeButton");
+
+
+        Button accessibilityButton =
+                (Button) loader
+                        .getNamespace()
+                        .get("accessibilityButton");
+
+
+        ImageView appIconView =
+                (ImageView) loader
+                        .getNamespace()
+                        .get("appIconView");
+
+
+        // =====================================================
+        // VALIDAÇÃO
+        // =====================================================
+
+        if (titleBar == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"titleBar\" não encontrado."
+            );
+        }
+
+
+        if (minimizeButton == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"minimizeButton\" não encontrado."
+            );
+        }
+
+
+        if (maximizeButton == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"maximizeButton\" não encontrado."
+            );
+        }
+
+
+        if (closeButton == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"closeButton\" não encontrado."
+            );
+        }
+
+
+        if (accessibilityButton == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"accessibilityButton\" não encontrado."
+            );
+        }
+
+
+        if (appIconView == null) {
+
+            throw new IllegalStateException(
+                    "fx:id=\"appIconView\" não encontrado."
+            );
+        }
+
+
+        // =====================================================
+        // ÍCONE NA TITLE BAR
+        // =====================================================
+
+        if (appIcon != null) {
+
+            appIconView.setImage(
+                    appIcon
+            );
+        }
+
+
+        // =====================================================
+        // ARRASTAR JANELA
+        // =====================================================
+
+        titleBar.setOnMousePressed(
+                event -> {
+
+                    dragOffsetX =
+                            event.getSceneX();
+
+                    dragOffsetY =
+                            event.getSceneY();
                 }
+        );
 
-                scene.getStylesheets().add(
-                                cssUrl.toExternalForm());
 
-                // =====================================================
-                // ÍCONE
-                // =====================================================
+        titleBar.setOnMouseDragged(
+                event -> {
 
-                InputStream iconStream = getClass().getResourceAsStream("/icons/y96y.png");
+                    if (!primaryStage.isMaximized()) {
 
-                Image appIcon = null;
+                        primaryStage.setX(
+                                event.getScreenX()
+                                        - dragOffsetX
+                        );
 
-                if (iconStream != null) {
-
-                        appIcon = new Image(iconStream);
-
-                        primaryStage.getIcons().add(appIcon);
-
-                } else {
-
-                        System.out.println(
-                                        "AVISO: /icons/y96tube.png não encontrado.");
-
+                        primaryStage.setY(
+                                event.getScreenY()
+                                        - dragOffsetY
+                        );
+                    }
                 }
+        );
 
-                primaryStage.setTitle("Y96TUBE");
 
-                // =====================================================
-                // ELEMENTOS DA TITLE BAR
-                // =====================================================
+        // =====================================================
+        // DUPLO CLIQUE = MAXIMIZAR
+        // =====================================================
 
-                HBox titleBar = (HBox) loader.getNamespace().get("titleBar");
+        titleBar.setOnMouseClicked(
+                event -> {
 
-                Button minimizeButton = (Button) loader.getNamespace().get("minimizeButton");
-
-                Button maximizeButton = (Button) loader.getNamespace().get("maximizeButton");
-
-                Button closeButton = (Button) loader.getNamespace().get("closeButton");
-
-                Button accessibilityButton = (Button) loader.getNamespace().get("accessibilityButton");
-
-                ImageView appIconView = (ImageView) loader.getNamespace().get("appIconView");
-
-                // =====================================================
-                // VALIDACAO
-                // =====================================================
-
-                if (titleBar == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"titleBar\" não encontrado.");
-                }
-
-                if (minimizeButton == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"minimizeButton\" não encontrado.");
-                }
-
-                if (maximizeButton == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"maximizeButton\" não encontrado.");
-                }
-
-                if (closeButton == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"closeButton\" não encontrado.");
-                }
-
-                if (accessibilityButton == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"accessibilityButton\" não encontrado.");
-                }
-
-                if (appIconView == null) {
-                        throw new IllegalStateException(
-                                        "fx:id=\"appIconView\" não encontrado.");
-                }
-
-                // =====================================================
-                // ICONE NA TITLE BAR
-                // =====================================================
-
-                if (appIcon != null) {
-                        appIconView.setImage(appIcon);
-                }
-
-                // =====================================================
-                // ARRASTAR JANELA
-                // =====================================================
-
-                titleBar.setOnMousePressed(event -> {
-
-                        dragOffsetX = event.getSceneX();
-                        dragOffsetY = event.getSceneY();
-
-                });
-
-                titleBar.setOnMouseDragged(event -> {
-
-                        if (!primaryStage.isMaximized()) {
-
-                                primaryStage.setX(
-                                                event.getScreenX() - dragOffsetX);
-
-                                primaryStage.setY(
-                                                event.getScreenY() - dragOffsetY);
-
-                        }
-
-                });
-
-                // =====================================================
-                // DUPLO CLIQUE = MAXIMIZAR
-                // =====================================================
-
-                titleBar.setOnMouseClicked(event -> {
-
-                        if (event.getClickCount() == 2) {
-
-                                primaryStage.setMaximized(
-                                                !primaryStage.isMaximized());
-
-                        }
-
-                });
-
-                // =====================================================
-                // ICONE MINIMIZAR
-                // =====================================================
-
-                SVGPath minimizeIcon = criarIcone(
-                                "M2 8 H14");
-
-                minimizeButton.setText("");
-                minimizeButton.setGraphic(minimizeIcon);
-
-                // =====================================================
-                // ICONE MAXIMIZAR
-                // =====================================================
-
-                SVGPath maximizeIcon = criarIcone(
-                                "M2 2 H14 V14 H2 Z");
-
-                maximizeButton.setText("");
-                maximizeButton.setGraphic(maximizeIcon);
-
-                // =====================================================
-                // ICONE FECHAR
-                // =====================================================
-
-                SVGPath closeIcon = criarIcone(
-                                "M2 2 L14 14 M14 2 L2 14");
-
-                closeButton.setText("");
-                closeButton.setGraphic(closeIcon);
-
-                // Garante a classe do botão de fechar
-                if (!closeButton.getStyleClass().contains("close-button")) {
-                        closeButton.getStyleClass().add("close-button");
-                }
-
-                // =====================================================
-                // ICONE ACESSIBILIDADE
-                // =====================================================
-
-                SVGPath darkModeIcon = criarIcone(
-                                "M14 8.5 A6.5 6.5 0 1 1 8 2 A5.2 5.2 0 0 0 14 8.5 Z");
-
-                darkModeIcon.getStyleClass().add("moon-icon");
-
-                accessibilityButton.setText("");
-                accessibilityButton.setGraphic(darkModeIcon);
-                // =====================================================
-                // MINIMIZAR
-                // =====================================================
-
-                minimizeButton.setOnAction(event -> {
-
-                        primaryStage.setIconified(true);
-
-                });
-
-                // =====================================================
-                // MAXIMIZAR / RESTAURAR
-                // =====================================================
-
-                maximizeButton.setOnAction(event -> {
+                    if (event.getClickCount() == 2) {
 
                         primaryStage.setMaximized(
-                                        !primaryStage.isMaximized());
+                                !primaryStage.isMaximized()
+                        );
+                    }
+                }
+        );
 
-                });
 
-                // =====================================================
-                // ALTERAR ICONE DE MAXIMIZAR
-                // =====================================================
+        // =====================================================
+        // ÍCONE MINIMIZAR
+        // =====================================================
 
-                primaryStage.maximizedProperty().addListener(
-                                (observable, oldValue, maximized) -> {
+        SVGPath minimizeIcon =
+                criarIcone(
+                        "M2 8 H14"
+                );
 
-                                        if (maximized) {
 
-                                                maximizeIcon.setContent(
-                                                                "M3 5 H11 V13 H3 Z M5 3 H13 V11");
+        minimizeButton.setText(
+                ""
+        );
 
-                                        } else {
 
-                                                maximizeIcon.setContent(
-                                                                "M2 2 H14 V14 H2 Z");
-                                        }
-                                });
+        minimizeButton.setGraphic(
+                minimizeIcon
+        );
 
-                // =====================================================
-                // FECHAR
-                // =====================================================
 
-                closeButton.setOnAction(event -> {
+        // =====================================================
+        // ÍCONE MAXIMIZAR
+        // =====================================================
 
-                        primaryStage.close();
+        SVGPath maximizeIcon =
+                criarIcone(
+                        "M2 2 H14 V14 H2 Z"
+                );
 
-                });
 
-                // =====================================================
-                // ACESSIBILIDADE / MODO ESCURO
-                // =====================================================
+        maximizeButton.setText(
+                ""
+        );
 
-                Tooltip accessibilityTooltip = new Tooltip("Ativar modo escuro");
 
-                accessibilityButton.setTooltip(
-                                accessibilityTooltip);
+        maximizeButton.setGraphic(
+                maximizeIcon
+        );
 
-                accessibilityButton.setOnAction(event -> {
 
-                        boolean darkMode = root.getStyleClass().contains("dark-mode");
+        // =====================================================
+        // ÍCONE FECHAR
+        // =====================================================
 
-                        if (darkMode) {
+        SVGPath closeIcon =
+                criarIcone(
+                        "M2 2 L14 14 M14 2 L2 14"
+                );
 
-                                root.getStyleClass().remove("dark-mode");
 
-                                accessibilityTooltip.setText(
-                                                "Ativar modo escuro");
+        closeButton.setText(
+                ""
+        );
 
-                        } else {
 
-                                root.getStyleClass().add("dark-mode");
+        closeButton.setGraphic(
+                closeIcon
+        );
 
-                                accessibilityTooltip.setText(
-                                                "Ativar modo claro");
+
+        // Garante a classe do botão de fechar
+
+        if (!closeButton
+                .getStyleClass()
+                .contains(
+                        "close-button"
+                )) {
+
+            closeButton
+                    .getStyleClass()
+                    .add(
+                            "close-button"
+                    );
+        }
+
+
+        // =====================================================
+        // ÍCONE ACESSIBILIDADE / MODO ESCURO
+        // =====================================================
+
+        SVGPath darkModeIcon =
+                criarIcone(
+                        "M14 8.5 A6.5 6.5 0 1 1 8 2 A5.2 5.2 0 0 0 14 8.5 Z"
+                );
+
+
+        darkModeIcon
+                .getStyleClass()
+                .add(
+                        "moon-icon"
+                );
+
+
+        accessibilityButton.setText(
+                ""
+        );
+
+
+        accessibilityButton.setGraphic(
+                darkModeIcon
+        );
+
+
+        // =====================================================
+        // MINIMIZAR
+        // =====================================================
+
+        minimizeButton.setOnAction(
+                event ->
+                        primaryStage.setIconified(
+                                true
+                        )
+        );
+
+
+        // =====================================================
+        // MAXIMIZAR / RESTAURAR
+        // =====================================================
+
+        maximizeButton.setOnAction(
+                event ->
+                        primaryStage.setMaximized(
+                                !primaryStage.isMaximized()
+                        )
+        );
+
+
+        // =====================================================
+        // ALTERAR ÍCONE DE MAXIMIZAR
+        // =====================================================
+
+        primaryStage.maximizedProperty()
+                .addListener(
+                        (observable,
+                         oldValue,
+                         maximized) -> {
+
+                            if (maximized) {
+
+                                maximizeIcon.setContent(
+                                        "M3 5 H11 V13 H3 Z M5 3 H13 V11"
+                                );
+
+                            } else {
+
+                                maximizeIcon.setContent(
+                                        "M2 2 H14 V14 H2 Z"
+                                );
+                            }
                         }
+                );
 
-                });
 
-                // =====================================================
-                // MOSTRAR
-                // =====================================================
+        // =====================================================
+        // FECHAR
+        // =====================================================
 
-                primaryStage.setScene(scene);
+        closeButton.setOnAction(
+                event ->
+                        primaryStage.close()
+        );
 
-                primaryStage.setWidth(560);
-                primaryStage.setHeight(520);
 
-                primaryStage.show();
+        // =====================================================
+        // ENCERRAMENTO DA APLICAÇÃO
+        // =====================================================
 
-                primaryStage.centerOnScreen();
-        }
+        /*
+         * Chamado antes de a janela ser fechada.
+         *
+         * Isso também cobre:
+         *
+         * - botão X
+         * - Alt + F4
+         * - fechamento solicitado pelo sistema
+         */
+        primaryStage.setOnCloseRequest(
+                event -> {
 
-        public static void main(String[] args) {
-                launch(args);
-        }
+                    controller.encerrarAplicacao();
+
+                }
+        );
+
+
+        // =====================================================
+        // ACESSIBILIDADE / MODO ESCURO
+        // =====================================================
+
+        Tooltip accessibilityTooltip =
+                new Tooltip(
+                        "Ativar modo escuro"
+                );
+
+
+        accessibilityButton.setTooltip(
+                accessibilityTooltip
+        );
+
+
+        accessibilityButton.setOnAction(
+                event -> {
+
+                    boolean darkMode =
+                            root.getStyleClass()
+                                    .contains(
+                                            "dark-mode"
+                                    );
+
+
+                    if (darkMode) {
+
+                        root.getStyleClass()
+                                .remove(
+                                        "dark-mode"
+                                );
+
+
+                        accessibilityTooltip.setText(
+                                "Ativar modo escuro"
+                        );
+
+                    } else {
+
+                        root.getStyleClass()
+                                .add(
+                                        "dark-mode"
+                                );
+
+
+                        accessibilityTooltip.setText(
+                                "Ativar modo claro"
+                        );
+                    }
+                }
+        );
+
+
+        // =====================================================
+        // MOSTRAR
+        // =====================================================
+
+        primaryStage.setScene(
+                scene
+        );
+
+
+        primaryStage.setWidth(
+                560
+        );
+
+
+        primaryStage.setHeight(
+                520
+        );
+
+
+        primaryStage.show();
+
+
+        primaryStage.centerOnScreen();
+    }
+
+
+    // =====================================================
+    // MAIN
+    // =====================================================
+
+    public static void main(String[] args) {
+
+        launch(args);
+    }
 }

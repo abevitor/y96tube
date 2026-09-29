@@ -7,6 +7,7 @@ import com.seuapp.core.model.VideoFormat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,12 +34,22 @@ public class YtDlpService {
                     "\\[download\\]\\s+(\\d{1,3}(?:\\.\\d+)?)%"
             );
 
+    private static final ObjectMapper OBJECT_MAPPER =
+            new ObjectMapper();
+
+    private static final long INFO_TIMEOUT_SECONDS = 60;
+
+    private static final long DOWNLOAD_TIMEOUT_MINUTES = 30;
+
+    private static final long SOCKET_TIMEOUT_SECONDS = 20;
+
 
     // =====================================================
     // BINÁRIOS
     // =====================================================
 
     private final String ytDlpBinary;
+
     private final String ffmpegBinary;
 
 
@@ -81,13 +94,11 @@ public class YtDlpService {
                         YtDlpService.class
                 );
 
-
         Path ytDlpPath =
                 PlatformUtils.findTool(
                         appDir,
                         "yt-dlp"
                 );
-
 
         Path ffmpegPath =
                 PlatformUtils.findTool(
@@ -95,51 +106,40 @@ public class YtDlpService {
                         "ffmpeg"
                 );
 
-
         String ytDlp =
                 ytDlpPath != null
                         ? ytDlpPath.toString()
                         : PlatformUtils.ytDlpFileName();
-
 
         String ffmpeg =
                 ffmpegPath != null
                         ? ffmpegPath.toString()
                         : PlatformUtils.ffmpegFileName();
 
-
         System.out.println(
                 "Sistema: "
-                        + System.getProperty(
-                        "os.name"
-                )
+                        + System.getProperty("os.name")
         );
-
 
         System.out.println(
                 "Arquitetura: "
-                        + PlatformUtils
-                                .architectureFolder()
+                        + PlatformUtils.architectureFolder()
         );
-
 
         System.out.println(
                 "Diretório da aplicação: "
                         + appDir
         );
 
-
         System.out.println(
                 "yt-dlp: "
                         + ytDlp
         );
 
-
         System.out.println(
                 "ffmpeg: "
                         + ffmpeg
         );
-
 
         return new YtDlpService(
                 ytDlp,
@@ -193,6 +193,11 @@ public class YtDlpService {
 
                         "--no-playlist",
 
+                        "--socket-timeout",
+                        String.valueOf(
+                                SOCKET_TIMEOUT_SECONDS
+                        ),
+
                         "-J",
 
                         "--no-warnings",
@@ -200,29 +205,42 @@ public class YtDlpService {
                         url
                 );
 
-
-        pb.redirectErrorStream(
-                false
-        );
-
+        pb.redirectErrorStream(false);
 
         Process process =
                 pb.start();
 
 
         // =================================================
-        // SAÍDA
+        // LEITURA DOS STREAMS
         // =================================================
 
-        String json =
-                readAll(
-                        process.getInputStream()
+        StringBuilder stdout =
+                new StringBuilder();
+
+        StringBuilder stderr =
+                new StringBuilder();
+
+        AtomicReference<IOException> stdoutError =
+                new AtomicReference<>();
+
+        AtomicReference<IOException> stderrError =
+                new AtomicReference<>();
+
+        Thread stdoutThread =
+                iniciarLeitor(
+                        process.getInputStream(),
+                        stdout,
+                        stdoutError,
+                        "yt-dlp-stdout"
                 );
 
-
-        String errOutput =
-                readAll(
-                        process.getErrorStream()
+        Thread stderrThread =
+                iniciarLeitor(
+                        process.getErrorStream(),
+                        stderr,
+                        stderrError,
+                        "yt-dlp-stderr"
                 );
 
 
@@ -230,11 +248,31 @@ public class YtDlpService {
         // TIMEOUT
         // =================================================
 
-        boolean terminou =
-                process.waitFor(
-                        60,
-                        java.util.concurrent.TimeUnit.SECONDS
-                );
+        boolean terminou;
+
+        try {
+
+            terminou =
+                    process.waitFor(
+                            INFO_TIMEOUT_SECONDS,
+                            TimeUnit.SECONDS
+                    );
+
+        } catch (InterruptedException e) {
+
+            PlatformUtils.destroyProcessTree(
+                    process
+            );
+
+            aguardarLeitores(
+                    stdoutThread,
+                    stderrThread
+            );
+
+            Thread.currentThread().interrupt();
+
+            throw e;
+        }
 
 
         if (!terminou) {
@@ -243,10 +281,35 @@ public class YtDlpService {
                     process
             );
 
+            aguardarLeitores(
+                    stdoutThread,
+                    stderrThread
+            );
 
             throw new IOException(
                     "yt-dlp demorou demais para responder."
             );
+        }
+
+
+        aguardarLeitores(
+                stdoutThread,
+                stderrThread
+        );
+
+
+        // =================================================
+        // ERROS DE LEITURA
+        // =================================================
+
+        if (stdoutError.get() != null) {
+
+            throw stdoutError.get();
+        }
+
+        if (stderrError.get() != null) {
+
+            throw stderrError.get();
         }
 
 
@@ -257,15 +320,26 @@ public class YtDlpService {
         int exit =
                 process.exitValue();
 
-
         if (exit != 0) {
+
+            String erro =
+                    stderr.toString().trim();
+
+            if (erro.isBlank()) {
+
+                erro =
+                        "Nenhuma mensagem detalhada foi fornecida.";
+            }
 
             throw new IOException(
                     "yt-dlp falhou ao consultar o vídeo "
                             + "(exit "
                             + exit
                             + "): "
-                            + errOutput
+                            + limitarMensagem(
+                                    erro,
+                                    2000
+                            )
             );
         }
 
@@ -274,13 +348,9 @@ public class YtDlpService {
         // JSON
         // =================================================
 
-        ObjectMapper mapper =
-                new ObjectMapper();
-
-
         JsonNode root =
-                mapper.readTree(
-                        json
+                OBJECT_MAPPER.readTree(
+                        stdout.toString()
                 );
 
 
@@ -305,7 +375,6 @@ public class YtDlpService {
                         "title"
                 );
 
-
         if (title == null
                 || title.isBlank()) {
 
@@ -324,7 +393,6 @@ public class YtDlpService {
                         "uploader"
                 );
 
-
         if (uploader == null
                 || uploader.isBlank()) {
 
@@ -342,7 +410,6 @@ public class YtDlpService {
                         root,
                         "thumbnail"
                 );
-
 
         /*
          * Em algumas respostas do yt-dlp,
@@ -488,12 +555,10 @@ public class YtDlpService {
 
             Integer height =
                     f.has("height")
-                            && !f.get(
-                            "height"
-                    ).isNull()
-                            ? f.get(
-                            "height"
-                    ).asInt()
+                            && !f.get("height")
+                            .isNull()
+                            ? f.get("height")
+                            .asInt()
                             : null;
 
 
@@ -503,12 +568,10 @@ public class YtDlpService {
 
             Double abr =
                     f.has("abr")
-                            && !f.get(
-                            "abr"
-                    ).isNull()
-                            ? f.get(
-                            "abr"
-                    ).asDouble()
+                            && !f.get("abr")
+                            .isNull()
+                            ? f.get("abr")
+                            .asDouble()
                             : null;
 
 
@@ -521,9 +584,8 @@ public class YtDlpService {
 
 
             if (f.has("filesize")
-                    && !f.get(
-                    "filesize"
-            ).isNull()) {
+                    && !f.get("filesize")
+                    .isNull()) {
 
                 sizeMb =
                         f.get(
@@ -533,7 +595,6 @@ public class YtDlpService {
                                 1024.0
                                         * 1024.0
                         );
-
 
             } else if (
                     f.has("filesize_approx")
@@ -689,7 +750,6 @@ public class YtDlpService {
                         " kbps"
                 );
 
-
             } else {
 
                 sb.append(
@@ -716,7 +776,6 @@ public class YtDlpService {
                 sb.append(
                         " (vídeo + áudio)"
                 );
-
 
             } else {
 
@@ -779,8 +838,8 @@ public class YtDlpService {
         ).isNull()
 
                 ? node.get(
-                        field
-                ).asText()
+                field
+        ).asText()
 
                 : null;
     }
@@ -854,6 +913,18 @@ public class YtDlpService {
 
         command.add(
                 "--newline"
+        );
+
+
+        command.add(
+                "--socket-timeout"
+        );
+
+
+        command.add(
+                String.valueOf(
+                        SOCKET_TIMEOUT_SECONDS
+                )
         );
 
 
@@ -1032,20 +1103,6 @@ public class YtDlpService {
             command.add(
                     "mp4"
             );
-
-
-            // =================================================
-            // REMUX MP4
-            // =================================================
-
-            command.add(
-                    "--remux-video"
-            );
-
-
-            command.add(
-                    "mp4"
-            );
         }
 
 
@@ -1055,23 +1112,6 @@ public class YtDlpService {
 
         command.add(
                 url
-        );
-
-
-        // =================================================
-        // DEBUG
-        // =================================================
-
-        System.out.println(
-                "Executando:"
-        );
-
-
-        System.out.println(
-                String.join(
-                        " ",
-                        command
-                )
         );
 
 
@@ -1107,83 +1147,110 @@ public class YtDlpService {
 
 
         // =================================================
-        // LER PROGRESSO
+        // LEITOR DE PROGRESSO
         // =================================================
 
-        try (
-                BufferedReader reader =
-                        new BufferedReader(
-                                new InputStreamReader(
-                                        process.getInputStream(),
-                                        StandardCharsets.UTF_8
-                                )
-                        )
-        ) {
-
-            String line;
+        AtomicReference<IOException> readerError =
+                new AtomicReference<>();
 
 
-            while (
-                    (line =
-                            reader.readLine())
-                            != null
-            ) {
-
-                if (progressListener == null) {
-
-                    continue;
-                }
+        Thread outputReader =
+                iniciarLeitorProgresso(
+                        process.getInputStream(),
+                        progressListener,
+                        readerError
+                );
 
 
-                Matcher matcher =
-                        PROGRESS_PATTERN.matcher(
-                                line
-                        );
+        int exitCode;
 
 
-                if (matcher.find()) {
-
-                    double percent =
-                            Double.parseDouble(
-                                    matcher.group(1)
-                            );
-
-
-                    progressListener.accept(
-                            percent
-                    );
-                }
-            }
-
-
-        } finally {
+        try {
 
             // =================================================
             // ESPERAR TERMINAR
             // =================================================
 
-            boolean terminou =
-                    process.waitFor(
-                            30,
-                            java.util.concurrent.TimeUnit.MINUTES
-                    );
+            boolean terminou;
+
+            try {
+
+                terminou =
+                        process.waitFor(
+                                DOWNLOAD_TIMEOUT_MINUTES,
+                                TimeUnit.MINUTES
+                        );
+
+            } catch (InterruptedException e) {
+
+                PlatformUtils.destroyProcessTree(
+                        process
+                );
+
+                aguardarLeitores(
+                        outputReader
+                );
+
+                Thread.currentThread().interrupt();
+
+                throw e;
+            }
 
 
             if (!terminou) {
 
-                PlatformUtils
-                        .destroyProcessTree(
-                                process
-                        );
-
-
-                apagarDiretorio(
-                        tempDir
+                PlatformUtils.destroyProcessTree(
+                        process
                 );
 
+                aguardarLeitores(
+                        outputReader
+                );
 
                 throw new IOException(
                         "Download demorou demais e foi encerrado."
+                );
+            }
+
+
+            // =================================================
+            // FINALIZAR LEITOR
+            // =================================================
+
+            aguardarLeitores(
+                    outputReader
+            );
+
+
+            // =================================================
+            // ERRO DE LEITURA
+            // =================================================
+
+            if (readerError.get() != null) {
+
+                throw readerError.get();
+            }
+
+
+            // =================================================
+            // EXIT CODE
+            // =================================================
+
+            exitCode =
+                    process.exitValue();
+
+        } finally {
+
+            /*
+             * Segurança adicional:
+             * se alguma exceção acontecer e o processo
+             * ainda estiver vivo, encerramos a árvore.
+             */
+
+            if (process.isAlive()) {
+
+                PlatformUtils.destroyProcessTree(
+                        process
                 );
             }
 
@@ -1198,11 +1265,7 @@ public class YtDlpService {
         }
 
 
-        // =================================================
-        // RETORNO
-        // =================================================
-
-        return process.exitValue();
+        return exitCode;
     }
 
 
@@ -1219,9 +1282,224 @@ public class YtDlpService {
         }
 
 
-        PlatformUtils.destroyProcessTree(
-                process
+        if (process.isAlive()) {
+
+            PlatformUtils.destroyProcessTree(
+                    process
+            );
+        }
+    }
+
+
+    // =====================================================
+    // LEITOR DE STREAM
+    // =====================================================
+
+    private Thread iniciarLeitor(
+            InputStream inputStream,
+            StringBuilder destino,
+            AtomicReference<IOException> erro,
+            String nomeThread) {
+
+        Thread thread =
+                new Thread(
+                        () -> {
+
+                            try (
+                                    BufferedReader reader =
+                                            new BufferedReader(
+                                                    new InputStreamReader(
+                                                            inputStream,
+                                                            StandardCharsets.UTF_8
+                                                    )
+                                            )
+                            ) {
+
+                                String line;
+
+                                while (
+                                        (line =
+                                                reader.readLine())
+                                                != null
+                                ) {
+
+                                    destino
+                                            .append(line)
+                                            .append('\n');
+                                }
+
+                            } catch (IOException e) {
+
+                                erro.set(
+                                        e
+                                );
+                            }
+                        },
+                        nomeThread
+                );
+
+
+        thread.setDaemon(
+                true
         );
+
+
+        thread.start();
+
+
+        return thread;
+    }
+
+
+    // =====================================================
+    // LEITOR DE PROGRESSO
+    // =====================================================
+
+    private Thread iniciarLeitorProgresso(
+            InputStream inputStream,
+            Consumer<Double> progressListener,
+            AtomicReference<IOException> erro) {
+
+        Thread thread =
+                new Thread(
+                        () -> {
+
+                            try (
+                                    BufferedReader reader =
+                                            new BufferedReader(
+                                                    new InputStreamReader(
+                                                            inputStream,
+                                                            StandardCharsets.UTF_8
+                                                    )
+                                            )
+                            ) {
+
+                                String line;
+
+                                while (
+                                        (line =
+                                                reader.readLine())
+                                                != null
+                                ) {
+
+                                    if (progressListener == null) {
+
+                                        continue;
+                                    }
+
+
+                                    Matcher matcher =
+                                            PROGRESS_PATTERN.matcher(
+                                                    line
+                                            );
+
+
+                                    if (matcher.find()) {
+
+                                        double percent =
+                                                Double.parseDouble(
+                                                        matcher.group(1)
+                                                );
+
+
+                                        progressListener.accept(
+                                                percent
+                                        );
+                                    }
+                                }
+
+                            } catch (IOException e) {
+
+                                erro.set(
+                                        e
+                                );
+                            }
+                        },
+                        "yt-dlp-progress-reader"
+                );
+
+
+        thread.setDaemon(
+                true
+        );
+
+
+        thread.start();
+
+
+        return thread;
+    }
+
+
+    // =====================================================
+    // AGUARDAR LEITORES
+    // =====================================================
+
+    private void aguardarLeitores(
+            Thread... threads) {
+
+        boolean interrompido =
+                false;
+
+
+        for (Thread thread : threads) {
+
+            if (thread == null) {
+
+                continue;
+            }
+
+
+            try {
+
+                thread.join(
+                        2000
+                );
+
+            } catch (InterruptedException e) {
+
+                interrompido =
+                        true;
+            }
+        }
+
+
+        if (interrompido) {
+
+            Thread.currentThread().interrupt();
+        }
+    }
+
+
+    // =====================================================
+    // LIMITAR MENSAGEM
+    // =====================================================
+
+    private String limitarMensagem(
+            String mensagem,
+            int maxCaracteres) {
+
+        if (mensagem == null) {
+
+            return "";
+        }
+
+
+        String texto =
+                mensagem.trim();
+
+
+        if (texto.length()
+                <= maxCaracteres) {
+
+            return texto;
+        }
+
+
+        return texto.substring(
+                0,
+                maxCaracteres
+        ) + "...";
     }
 
 
@@ -1261,14 +1539,12 @@ public class YtDlpService {
                                             path
                                     );
 
+                                } catch (IOException e) {
 
-                                } catch (
-                                        IOException e) {
-
-                                    System.out.println(
-                                            "Não foi possível apagar: "
-                                                    + path
-                                    );
+                                    /*
+                                     * Falha de limpeza não deve
+                                     * derrubar a aplicação.
+                                     */
                                 }
                             }
                     );
@@ -1276,54 +1552,10 @@ public class YtDlpService {
 
         } catch (IOException e) {
 
-            System.out.println(
-                    "Erro limpando diretório temporário: "
-                            + e.getMessage()
-            );
-        }
-    }
-
-
-    // =====================================================
-    // LER INPUT STREAM
-    // =====================================================
-
-    private String readAll(
-            java.io.InputStream inputStream)
-            throws IOException {
-
-        try (
-                BufferedReader reader =
-                        new BufferedReader(
-                                new InputStreamReader(
-                                        inputStream,
-                                        StandardCharsets.UTF_8
-                                )
-                        )
-        ) {
-
-            StringBuilder sb =
-                    new StringBuilder();
-
-
-            String line;
-
-
-            while (
-                    (line =
-                            reader.readLine())
-                            != null
-            ) {
-
-                sb.append(
-                        line
-                ).append(
-                        '\n'
-                );
-            }
-
-
-            return sb.toString();
+            /*
+             * Falha de limpeza não deve
+             * derrubar a aplicação.
+             */
         }
     }
 
@@ -1370,7 +1602,7 @@ public class YtDlpService {
             boolean terminou =
                     p.waitFor(
                             10,
-                            java.util.concurrent.TimeUnit.SECONDS
+                            TimeUnit.SECONDS
                     );
 
 
@@ -1386,14 +1618,6 @@ public class YtDlpService {
 
 
         } catch (IOException e) {
-
-            System.out.println(
-                    "Erro ao executar "
-                            + binario
-                            + ": "
-                            + e.getMessage()
-            );
-
 
             return false;
 

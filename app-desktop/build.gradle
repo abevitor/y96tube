@@ -50,10 +50,6 @@ runtime {
         appVersion = '0.1.0'
         skipInstaller = false
 
-        imageOptions = isWindows
-                ? ['--win-console']
-                : []
-
         installerType =
                 isWindows ? 'msi' :
                 isLinux ? 'deb' :
