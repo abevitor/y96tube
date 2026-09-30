@@ -27,11 +27,22 @@ def isWindows = osName.contains('win')
 def isLinux = osName.contains('linux')
 def isMac = osName.contains('mac')
 
+// =====================================================
+// FERRAMENTAS DO APLICATIVO
+// =====================================================
+
+def windowsYtDlp =
+        file("${rootProject.projectDir}/tools/windows/yt-dlp.exe")
+
+def windowsFfmpeg =
+        file("${rootProject.projectDir}/tools/windows/ffmpeg.exe")
+
 runtime {
     additive = true
 
     modules = [
-        'jdk.unsupported'
+        'jdk.unsupported',
+        'jdk.crypto.ec'
     ]
 
     options = [
@@ -49,6 +60,23 @@ runtime {
         imageName = 'YoutubeConverter'
         appVersion = '0.1.0'
         skipInstaller = false
+
+        // =================================================
+        // COPIAR YT-DLP E FFMPEG PARA O PACOTE
+        // =================================================
+
+        imageOptions = isWindows
+                ? [
+                    '--app-content',
+                    windowsYtDlp.absolutePath
+                            + ','
+                            + windowsFfmpeg.absolutePath
+                ]
+                : []
+
+        // =================================================
+        // INSTALADOR
+        // =================================================
 
         installerType =
                 isWindows ? 'msi' :

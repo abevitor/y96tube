@@ -713,39 +713,26 @@ public class MainController {
         } else {
 
             Image image =
-                    new Image(
-                            thumbnailUrl,
-                            150,
-                            85,
-                            true,
-                            true,
-                            true
-                    );
+        new Image(
+                thumbnailUrl,
+                150,
+                85,
+                true,
+                true,
+                false
+        );
 
+if (image.isError()) {
 
-            thumbnailImage.setImage(
-                    image
-            );
+    thumbnailImage.setImage(null);
 
+} else {
 
-            image.errorProperty()
-                    .addListener(
-                            (obs,
-                             oldValue,
-                             error) -> {
+    thumbnailImage.setImage(
+            image
+    );
+}
 
-                                if (error) {
-
-                                    Platform.runLater(
-                                            () ->
-                                                    thumbnailImage
-                                                            .setImage(
-                                                                    null
-                                                            )
-                                    );
-                                }
-                            }
-                    );
         }
 
 
