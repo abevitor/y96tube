@@ -42,7 +42,7 @@ runtime {
     ]
 
     launcher {
-        noConsole = true
+        noConsole = false
     }
 
     jpackage {
